@@ -11,6 +11,7 @@
 #include "LiquidCrystal.h"
 #include "ReactorProtocol.h"
 #include "BluetoothClient.h"
+#include "TimerOne.h"
 
 #define DEBUG 1
 
