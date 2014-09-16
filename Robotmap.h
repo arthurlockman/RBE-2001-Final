@@ -9,6 +9,8 @@
 #include "LSM303.h"
 #include "QTRSensors.h"
 #include "LiquidCrystal.h"
+#include "ReactorProtocol.h"
+#include "BluetoothClient.h"
 
 #define DEBUG 1
 
