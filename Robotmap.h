@@ -6,6 +6,9 @@
 #include "Arduino.h"
 #include "Servo.h"
 #include "LimitSwitch.h"
+#include "LSM303.h"
+#include "QTRSensors.h"
+#include "LiquidCrystal.h"
 
 #define DEBUG 1
 

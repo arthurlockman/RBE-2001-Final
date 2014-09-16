@@ -1,4 +1,4 @@
-RoboSWAG
+RoboSWAG 2
 ========
 
-RBE 1001 group 4 2013 code for the final project.
+RBE 2001 group 2 2014 code for the final project.
