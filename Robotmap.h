@@ -13,6 +13,7 @@
 #include "BluetoothClient.h"
 #include "TimerOne.h"
 #include "SwagDrive.h"
+#include "Alarm.h"
 
 #define DEBUG 1
 
@@ -46,6 +47,12 @@ enum JoystickAxis
 	kLeftStickX = 4, ///< The left joystick's X axis.
 	kBackLeftButtons = 5, ///< The joystick's back left buttons.
 	kBackRightButtons = 6 ///< The joystick's back right buttons.
+};
+
+///The digital output pins on the robot.
+enum DigitalOutPins
+{
+	kRadiationAlarm = 3 ///< The pin that has the radiation alarm on it.
 };
 
 /**
