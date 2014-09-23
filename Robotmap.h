@@ -12,6 +12,7 @@
 #include "ReactorProtocol.h"
 #include "BluetoothClient.h"
 #include "TimerOne.h"
+#include "Encoder.h"
 
 #define DEBUG 1
 
