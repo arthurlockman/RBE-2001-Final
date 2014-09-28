@@ -13,24 +13,37 @@
 #include "BluetoothClient.h"
 #include "TimerOne.h"
 #include "Encoder.h"
-#include "SwagDrive.h"
 #include "Alarm.h"
 
 #define DEBUG 1
 
+static const float kLineTrackingP = 0.01;
+
 ///The different motors that are attached to the robot.
 enum Motors
 {
-	kFrontRightMotor = 1, ///< The front right motor.
-	kFrontLeftMotor = 2, ///< The front left motor.
-	kRearRightMotor = 3, ///< The rear right motor.
-	kRearLeftMotor = 4 ///< The rear left motor.
+	kFrontRightMotor = 6, ///< The front right motor.
+	kFrontLeftMotor = 7, ///< The front left motor.
+	kRearRightMotor = 8, ///< The rear right motor.
+	kRearLeftMotor = 9, ///< The rear left motor.
+	kClawMotor = 10,
+	kConveyerMotor = 11,
+	kFourBarMotor = 12
 };
 
 ///The digital inputs on the robot.
 enum DigitalInputs
 {
-	kDummyInput = 1
+	kDummyInput = 1,
+	kLineSensor7 = 22,
+	kLineSensor6 = 23,
+	kLineSensor5 = 24,
+	kLineSensor4 = 25,
+	kLineSensor3 = 26,
+	kLineSensor2 = 27,
+	kLineSensor1 = 28,
+	kLineSensor0 = 29,
+	kLineSensorLED = 30
 };
 
 ///The Analog inputs on the robot.
