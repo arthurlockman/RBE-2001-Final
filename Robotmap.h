@@ -11,13 +11,21 @@
 #include "LiquidCrystal.h"
 #include "ReactorProtocol.h"
 #include "BluetoothClient.h"
-#include "TimerOne.h"
+#include "TimerThree.h"
 #include "Encoder.h"
 #include "Alarm.h"
 
 #define DEBUG 1
 
+///PID Values
 static const float kLineTrackingP = 0.01;
+
+///The different robot states.
+enum RobotStates
+{
+	kStatePaused,
+	kStateStart
+};
 
 ///The different motors that are attached to the robot.
 enum Motors
