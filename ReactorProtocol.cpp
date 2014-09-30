@@ -118,7 +118,9 @@ bool ReactorProtocol::getData(byte* pkt, byte *data, byte &type) {
   //first check the checksum
   byte cs = calcChecksum(pkt, size_pkt - 1);
   if (cs == pkt[size_pkt]) { // is it a valid packet?
-    //checksum is OK, extract the appropriate amount of data
+        //checksum is OK, extract and return the packet type id
+	type = pkt[2];
+	//now extract the appropriate amount of data depending on the packet type
 	switch (type) {
 	case 1:	// storage tube availability
 	case 2:	// supply tube availability
