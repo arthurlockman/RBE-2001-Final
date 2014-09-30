@@ -11,6 +11,7 @@
 #include "LiquidCrystal.h"
 #include "ReactorProtocol.h"
 #include "BluetoothClient.h"
+#include "BluetoothMaster.h"
 #include "TimerThree.h"
 #include "Encoder.h"
 #include "Alarm.h"
