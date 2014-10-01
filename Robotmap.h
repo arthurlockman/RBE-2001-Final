@@ -22,11 +22,12 @@
 ///PID Values
 static const float kLineTrackingP = 0.01;
 
-///The different robot states.
+///Operation States
 enum RobotStates
 {
-	kStatePaused,
-	kStateStart
+	kStartup,
+	kWaitForBluetooth,
+	kTankDrive
 };
 
 enum Direction

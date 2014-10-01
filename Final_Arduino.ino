@@ -26,6 +26,7 @@ BluetoothMaster m_btMaster;
 //ISR Variables
 volatile long interruptCount = 0;
 static const int kTimerPeriod = 1000000;
+int kCurrentRobotState = kStartup;
 
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
@@ -59,10 +60,22 @@ void loop()
 {
 	// unsigned int position = read_position();
 	// track_line(position);
-	if (Serial.available() > 0 && _sendhb == 0)
+	switch (kCurrentRobotState) 
 	{
-		_sendhb = 1;
-		Serial.println("Sending heartbeat...");
+		case kStartup:
+			Serial.println("Robot initialized. Waiting for bluetooth...");
+			kCurrentRobotState = kWaitForBluetooth;
+			break;
+		case kWaitForBluetooth:
+			if (Serial.available() > 0 && _sendhb == 0)
+			{
+				_sendhb = 1;
+				Serial.println("Sending heartbeat...");
+				kCurrentRobotState = kTankDrive;
+			}
+			break;
+		case kTankDrive:
+			break;
 	}
 }
 
