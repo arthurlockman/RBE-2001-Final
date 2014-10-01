@@ -191,6 +191,7 @@ void track_to_line()
 		{ 
 			Serial.print("On a line. Stopping.\t"); 
 			foundLine = 1;
+			stopDrive();
 		}
 	}
 }
