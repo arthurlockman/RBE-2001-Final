@@ -31,11 +31,11 @@ enum RobotStates
 
 enum Direction
 {
-	kNorth;
-	kSouth;
-	kEast;
-	kWest;
-}
+	kNorth,
+	kSouth,
+	kEast,
+	kWest
+};
 
 ///The different motors that are attached to the robot.
 enum Motors
