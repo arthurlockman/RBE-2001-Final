@@ -30,13 +30,14 @@ static const int kTimerPeriod = 1000000;
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
 byte _heartbeatData[3];
+int _sendhb = 0;
 
 void setup()
 {
 	Serial.begin(115200);
 	Serial1.begin(115200);
 
-	calibrate_qtrrc_sensor();
+	// calibrate_qtrrc_sensor();
 	m_frontRight.attach(kFrontRightMotor);
 	m_frontLeft.attach(kFrontLeftMotor);
 	m_rearRight.attach(kRearRightMotor);
@@ -46,15 +47,19 @@ void setup()
 	m_conveyor.attach(kConveyerMotor);
 	Timer3.initialize(kTimerPeriod);
 	Timer3.attachInterrupt(periodicUpdate);
-
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 }
 
 void loop()
 {
-	unsigned int position = read_position();
-	track_line(position);
+	// unsigned int position = read_position();
+	// track_line(position);
+	// Serial.println(m_btMaster.testConStatus());
+	if (Serial.available() > 0)
+	{
+		_sendhb = 1;
+	}
 }
 
 /**
@@ -69,7 +74,7 @@ void periodicUpdate()
 {
 	//Do things here with interruptcount.
 	interruptCount++;
-	sendHeartbeat();
+	if (_sendhb) { sendHeartbeat(); }
 }
 
 /**
