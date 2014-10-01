@@ -17,6 +17,7 @@
 #include "Alarm.h"
 
 #define DEBUG 1
+#define TEAM_NUMBER 2
 
 ///PID Values
 static const float kLineTrackingP = 0.01;
@@ -76,6 +77,32 @@ enum JoystickAxis
 enum DigitalOutPins
 {
 	kRadiationAlarm = 3 ///< The pin that has the radiation alarm on it.
+};
+
+///Bluetooth Packet Types
+enum BTPacketTypes
+{
+	kBTStorageTubeAvailable = 0x01,
+	kBTSupplyTubeAvailable = 0x02,
+	kBTRadiationAlert = 0x03,
+	kBTStopMovement = 0x04,
+	kBTResumeMovement = 0x05,
+	kBTRobotStatus = 0x06,
+	kBTHeartbeat = 0x07
+};
+
+///Enum to hold bluetooth addresses.
+enum RobotAddresses
+{
+	kAddressFMS = 0x00,
+	kAddressRobot = 0x02 
+};
+
+///Radiation Alert Messages
+enum RadiationAlertMessages
+{
+	kRadiationCarryingSpent = 0x2C,
+	kRadiationCarryingNew = 0xFF
 };
 
 /**

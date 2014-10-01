@@ -6,8 +6,7 @@
 #define NUM_SENSORS 8
 #define TIMEOUT 2500  
 
-// sensors 0 through 7 are connected to digital pins 3 through 10, respectively
-QTRSensorsRC qtrrc((unsigned char[]) {kLineSensor0, kLineSensor1, kLineSensor2, 
+QTRSensorsRC m_lineSensor((unsigned char[]) {kLineSensor0, kLineSensor1, kLineSensor2, 
 	kLineSensor3, kLineSensor4, kLineSensor5, kLineSensor6, kLineSensor7},
 	NUM_SENSORS, TIMEOUT, kLineSensorLED); 
 unsigned int sensorValues[NUM_SENSORS];
@@ -21,13 +20,22 @@ Servo m_claw;
 Servo m_lineup;
 Servo m_conveyor;
 
+ReactorProtocol m_reactor(kAddressRobot);
+BluetoothMaster m_btMaster;
+
 //ISR Variables
 volatile long interruptCount = 0;
-static const int kTimerPeriod = 50000;
+static const int kTimerPeriod = 1000000;
+
+byte _heartbeatPacket[10];
+int  _heartbeatSize;
+byte _heartbeatData[3];
 
 void setup()
 {
 	Serial.begin(115200);
+	Serial1.begin(115200);
+
 	calibrate_qtrrc_sensor();
 	m_frontRight.attach(kFrontRightMotor);
 	m_frontLeft.attach(kFrontLeftMotor);
@@ -38,6 +46,9 @@ void setup()
 	m_conveyor.attach(kConveyerMotor);
 	Timer3.initialize(kTimerPeriod);
 	Timer3.attachInterrupt(periodicUpdate);
+
+	m_reactor.setDst(0x00);
+	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 }
 
 void loop()
@@ -58,6 +69,16 @@ void periodicUpdate()
 {
 	//Do things here with interruptcount.
 	interruptCount++;
+	sendHeartbeat();
+}
+
+/**
+ * @brief Send the heartbat message.
+ * @details Sends the heartbeat message to the field computer.
+ */
+void sendHeartbeat()
+{
+	m_btMaster.sendPkt(_heartbeatPacket, _heartbeatSize);
 }
 
 void calibrate_qtrrc_sensor()
@@ -67,7 +88,7 @@ void calibrate_qtrrc_sensor()
 	digitalWrite(13, HIGH);
 	for (int i = 0; i < 400; i++)
 	{
-		qtrrc.calibrate();
+		m_lineSensor.calibrate();
 	}
 	digitalWrite(13, LOW);
 
@@ -75,7 +96,7 @@ void calibrate_qtrrc_sensor()
 	Serial.begin(9600);
 	for (int i = 0; i < NUM_SENSORS; i++)
 	{
-		Serial.print(qtrrc.calibratedMinimumOn[i]);
+		Serial.print(m_lineSensor.calibratedMinimumOn[i]);
 		Serial.print(' ');
 	}
 	Serial.println();
@@ -83,7 +104,7 @@ void calibrate_qtrrc_sensor()
 	// print the calibration maximum values measured when emitters were on
 	for (int i = 0; i < NUM_SENSORS; i++)
 	{
-		Serial.print(qtrrc.calibratedMaximumOn[i]);
+		Serial.print(m_lineSensor.calibratedMaximumOn[i]);
 		Serial.print(' ');
 	}
 	Serial.println();
@@ -93,7 +114,7 @@ void calibrate_qtrrc_sensor()
 
 unsigned int read_position()
 {
-	unsigned int position = qtrrc.readLine(sensorValues);
+	unsigned int position = m_lineSensor.readLine(sensorValues);
 	return position;
 }
 
