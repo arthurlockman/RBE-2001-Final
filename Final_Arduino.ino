@@ -32,6 +32,9 @@ int  _heartbeatSize;
 byte _heartbeatData[3];
 int _sendhb = 0;
 
+Direction StartingDirection = kNorth;
+Direction currentDirection;
+
 void setup()
 {
 	Serial.begin(115200);
@@ -49,6 +52,7 @@ void setup()
 	Timer3.attachInterrupt(periodicUpdate);
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
+	currentDirection = StartingDirection;
 }
 
 void loop()
@@ -186,3 +190,21 @@ void stopAll()
 	m_claw.write(90);
 	m_lineup.write(90);
 }
+
+void motion()
+{
+	track_to_line();
+	return;
+}
+
+bool atDecisionPoint()
+{
+	return false;
+}
+
+void decide()
+{
+
+}
+
+
