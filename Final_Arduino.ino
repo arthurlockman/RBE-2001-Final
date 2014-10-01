@@ -1,6 +1,7 @@
 #include "Robotmap.h"
 #include <QTRSensors.h>
 
+
 //Alarm radiationAlarm(kRadiationAlarm);
 
 #define NUM_SENSORS 8
@@ -35,6 +36,14 @@ int _sendhb = 0;
 
 Direction StartingDirection = kNorth;
 Direction currentDirection;
+
+ int leftdrive = 90;  
+ int rightdrive = 90;  
+ int claw_value = 0;
+ int conveyer_value = 90;
+ int FourBar_value = 0;
+
+ PPM ppm(2); 
 
 void setup()
 {
@@ -75,6 +84,35 @@ void loop()
 			}
 			break;
 		case kTankDrive:
+			 leftdrive = ppm.getChannel(2);
+			 rightdrive = ppm.getChannel(3);
+
+			 if(abs(ppm.getChannel(5) - claw_value) > 120)
+			 {
+			   claw_value = ppm.getChannel(5);
+			 }
+			 
+			 conveyer_value = ppm.getChannel(6);
+			 
+			 if(abs(ppm.getChannel(4) - 90) > 30)
+			 {
+			   if(ppm.getChannel(4) < 90)
+			   {
+			     FourBar_value = 10;
+			   }
+			   else
+			   {
+			     FourBar_value = 80;
+			   }
+			 }
+			 
+			 m_frontLeft.write(leftdrive); 
+			 m_rearLeft.write(leftdrive);  
+			 m_frontRight.write(180 - rightdrive);
+			 m_rearRight.write(180 - rightdrive);
+			 m_claw.write(claw_value);
+			 m_conveyor.write(180 - conveyer_value);
+			 m_lineup.write(FourBar_value);
 			break;
 	}
 }
