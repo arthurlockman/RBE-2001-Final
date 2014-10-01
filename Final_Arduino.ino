@@ -21,6 +21,8 @@ Servo m_claw;
 Servo m_lineup;
 Servo m_conveyor;
 
+LSM303 m_compass;
+
 ReactorProtocol m_reactor(kAddressRobot);
 BluetoothMaster m_btMaster;
 
@@ -62,11 +64,16 @@ void setup()
 	Timer3.attachInterrupt(periodicUpdate);
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
-	currentDirection = StartingDirection;
+
+	m_compass.init();
+    m_compass.enableDefault();
+    m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
+  	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
 }
 
 void loop()
 {
+	m_compass.read();
 	// unsigned int position = read_position();
 	// track_line(position);
 	switch (kCurrentRobotState) 
@@ -253,6 +260,28 @@ void motion()
 void decide()
 {
 
+}
+
+void turnRight()
+{
+	float initial_heading = m_compass.heading();
+	while(abs(initial_heading - m_compass.heading()) < 85 ||  abs(initial_heading - m_compass.heading()) > 95)
+	{
+		// Turn and stuff.
+	}
+
+}
+
+void turnLeft()
+{
+
+}
+
+void turnAround()
+{
+	// Turn while not over white
+
+	// Keep turning while not directly over line
 }
 
 
