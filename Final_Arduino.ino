@@ -55,10 +55,10 @@ void loop()
 {
 	// unsigned int position = read_position();
 	// track_line(position);
-	// Serial.println(m_btMaster.testConStatus());
-	if (Serial.available() > 0)
+	if (Serial.available() > 0 && _sendhb == 0)
 	{
 		_sendhb = 1;
+		Serial.println("Sending heartbeat...");
 	}
 }
 
