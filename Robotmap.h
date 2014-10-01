@@ -105,6 +105,32 @@ enum RadiationAlertMessages
 	kRadiationCarryingNew = 0xFF
 };
 
+///Movement status messages
+enum MovementStatusMessages
+{
+	kMovementStopped = 0x01,
+	kMovementTeleop = 0x02,
+	kMovementAuto = 0x03
+};
+
+///Gripper status messages
+enum GripperStatusMessages
+{
+	kGripperNoRod = 0x01,
+	kGripperHasRod = 0x02
+};
+
+///Operation status messages
+enum OperationStatusMessages
+{
+	kOperationGripEngage = 0x01,
+	kOperationGripRelease = 0x02,
+	kOperationDrivingToRod = 0x03,
+	kOperationDrivingToStorage = 0x04,
+	kOperationDrivingToSupply = 0x05,
+	kOperationIdle = 0x06
+};
+
 /**
  * @brief Tells whether or not a value is within a certain tolerance of another value.
  * @param value The value to check.
