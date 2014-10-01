@@ -29,7 +29,7 @@ BluetoothMaster m_btMaster;
 //ISR Variables
 volatile long interruptCount = 0;
 static const int kTimerPeriod = 1000000;
-int kCurrentRobotState = kStartup;
+int kCurrentRobotState = kTankDrive;
 
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
@@ -65,15 +65,15 @@ void setup()
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 
-	m_compass.init();
-    m_compass.enableDefault();
-    m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
-  	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
+	// m_compass.init();
+    // m_compass.enableDefault();
+    // m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
+  	// m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
 }
 
 void loop()
 {
-	m_compass.read();
+	// m_compass.read();
 	// unsigned int position = read_position();
 	// track_line(position);
 	switch (kCurrentRobotState) 
@@ -91,35 +91,42 @@ void loop()
 			}
 			break;
 		case kTankDrive:
-			 leftdrive = ppm.getChannel(2);
-			 rightdrive = ppm.getChannel(3);
+				 leftdrive = ppm.getChannel(2);
+				 rightdrive = ppm.getChannel(3);
 
-			 if(abs(ppm.getChannel(5) - claw_value) > 120)
-			 {
-			   claw_value = ppm.getChannel(5);
-			 }
-			 
-			 conveyer_value = ppm.getChannel(6);
-			 
-			 if(abs(ppm.getChannel(4) - 90) > 30)
-			 {
-			   if(ppm.getChannel(4) < 90)
-			   {
-			     FourBar_value = 10;
-			   }
-			   else
-			   {
-			     FourBar_value = 80;
-			   }
-			 }
-			 
-			 m_frontLeft.write(leftdrive); 
-			 m_rearLeft.write(leftdrive);  
-			 m_frontRight.write(180 - rightdrive);
-			 m_rearRight.write(180 - rightdrive);
-			 m_claw.write(claw_value);
-			 m_conveyor.write(180 - conveyer_value);
-			 m_lineup.write(FourBar_value);
+				 if(abs(ppm.getChannel(5) - claw_value) > 150)
+				 {
+				   if(ppm.getChannel(5) < 90)
+				   {
+				   		claw_value = 0;
+				   }
+				   else
+				   {
+				   		claw_value = 180;
+				   }
+				 }
+				 
+				 conveyer_value = ppm.getChannel(6);
+				 
+				 if(abs(ppm.getChannel(4) - 90) > 30)
+				 {
+				   if(ppm.getChannel(4) < 90)
+				   {
+				     FourBar_value = 10;
+				   }
+				   else
+				   {
+				     FourBar_value = 80;
+					}
+				}
+				 
+				m_frontLeft.write(leftdrive); 
+				m_rearLeft.write(leftdrive);  
+				m_frontRight.write(180 - rightdrive);
+				m_rearRight.write(180 - rightdrive);
+				m_claw.write(claw_value);
+				m_conveyor.write(180 - conveyer_value);
+				m_lineup.write(FourBar_value);
 			break;
 	}
 }
