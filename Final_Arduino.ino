@@ -194,12 +194,8 @@ void stopAll()
 void motion()
 {
 	track_to_line();
+	decide();
 	return;
-}
-
-bool atDecisionPoint()
-{
-	return false;
 }
 
 void decide()
