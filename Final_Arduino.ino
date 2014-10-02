@@ -65,17 +65,22 @@ void setup()
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 
-	// m_compass.init();
-    // m_compass.enableDefault();
-    // m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
-  	// m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
+	m_compass.init();
+    m_compass.enableDefault();
+    m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
+  	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
+
+
+  	turnAround();
+  	delay(3000);
+  	turnAround();
 }
 
 void loop()
 {
-	// m_compass.read();
-	// unsigned int position = read_position();
-	// track_line(position);
+	m_compass.read();
+	//unsigned int position = read_position();
+	//track_line(position);
 	switch (kCurrentRobotState) 
 	{
 		case kStartup:
@@ -126,7 +131,7 @@ void loop()
 				m_rearRight.write(180 - rightdrive);
 				m_claw.write(claw_value);
 				m_conveyor.write(180 - conveyer_value);
-				m_lineup.write(FourBar_value);
+				//m_lineup.write(FourBar_value);
 			break;
 	}
 }
@@ -274,21 +279,25 @@ void turnRight()
 	float initial_heading = m_compass.heading();
 	while(abs(initial_heading - m_compass.heading()) < 85 ||  abs(initial_heading - m_compass.heading()) > 95)
 	{
-		// Turn and stuff.
+		tankDrive(40, -40);
 	}
 
 }
 
 void turnLeft()
 {
-
+	float initial_heading = m_compass.heading();
+	while(abs(initial_heading - m_compass.heading()) < 85 ||  abs(initial_heading - m_compass.heading()) > 95)
+	{
+		tankDrive(-40, 40);
+	}
 }
 
 void turnAround()
 {
-	// Turn while not over white
-
-	// Keep turning while not directly over line
+	
+	turnRight();
+	turnRight();
 }
 
 
