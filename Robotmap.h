@@ -15,6 +15,7 @@
 #include "TimerThree.h"
 #include "Encoder.h"
 #include "Alarm.h"
+#include <Wire.h>
 
 #define DEBUG 1
 #define TEAM_NUMBER 2

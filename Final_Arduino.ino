@@ -65,20 +65,25 @@ void setup()
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 
+	Wire.begin();
 	m_compass.init();
     m_compass.enableDefault();
     m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
   	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
+  	Serial.println("Compass initialized.");
 
-
-  	turnAround();
-  	delay(3000);
-  	turnAround();
+  	// turnAround();
+  	// delay(3000);
+  	// turnAround();
 }
 
 void loop()
 {
 	m_compass.read();
+  	float heading = m_compass.heading();
+  
+  	Serial.println(heading);
+  	delay(100);
 	//unsigned int position = read_position();
 	//track_line(position);
 	switch (kCurrentRobotState) 
