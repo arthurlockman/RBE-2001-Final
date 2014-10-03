@@ -31,10 +31,10 @@ QueueList<BTPacket> m_packetQueue;
 
 //ISR Variables
 volatile unsigned long interruptCount = 0;
-static const int kTimerPeriod = 100000;
-static const int kSecond = 1000000;
+static const unsigned long kTimerPeriod = 100000;
+static const unsigned long kSecond = 1000000;
 int kCurrentRobotState = kStartup;
-static const int kHeartbeatPeriod =  kSecond/kTimerPeriod;
+static const unsigned long kHeartbeatPeriod =  kSecond / kTimerPeriod;
 
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
@@ -176,6 +176,7 @@ void sendHeartbeat()
 {
 	BTPacket tmp = {_heartbeatPacket, _heartbeatSize};
 	m_packetQueue.push(tmp);
+	sendMessage(0x00, 0x03, 0x2C);
 }
 
 void sendMessage(byte destination, byte type, byte data)

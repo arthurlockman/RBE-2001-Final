@@ -89,12 +89,12 @@ int ReactorProtocol::createPkt(byte type, byte* data, byte pkt[10]) {
 //        pkt[1] = size;		// now that the size has been determined, finish the packet
 //    	break;
     }
-	//For Debug purposes
-//	Serial.println("createPkt: made the following...");
-//	for(int i = 0; i < size + 1; i++)
-//	{
-//		Serial.println(pkt[i], HEX);
-//	}
+	// For Debug purposes
+	Serial.println("createPkt: made the following...");
+	for(int i = 0; i < size + 1; i++)
+	{
+		Serial.println(pkt[i], HEX);
+	}
     return (size + 1);
 }	// end createPkt
 
