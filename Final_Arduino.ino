@@ -31,8 +31,10 @@ QueueList<BTPacket> m_packetQueue;
 
 //ISR Variables
 volatile unsigned long interruptCount = 0;
-static const int kTimerPeriod = 20000;
+static const int kTimerPeriod = 100000;
+static const int kSecond = 1000000;
 int kCurrentRobotState = kStartup;
+static const int kHeartbeatPeriod = kTimerPeriod / kSecond;
 
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
@@ -155,7 +157,7 @@ void periodicUpdate()
 {
 	//Do things here with interruptcount.
 	interruptCount++;
-	if (_sendhb && (interruptCount % 50) == 0) 
+	if (_sendhb && (interruptCount % kHeartbeatPeriod) == 0) 
 	{ 
 		sendHeartbeat();
 	}
@@ -172,7 +174,6 @@ void periodicUpdate()
  */
 void sendHeartbeat()
 {
-	m_btMaster.sendPkt(_heartbeatPacket, _heartbeatSize);
 	BTPacket tmp = {_heartbeatPacket, _heartbeatSize};
 	m_packetQueue.push(tmp);
 }
