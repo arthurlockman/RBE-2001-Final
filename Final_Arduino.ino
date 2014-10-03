@@ -1,6 +1,4 @@
 #include "Robotmap.h"
-#include <QTRSensors.h>
-
 
 //Alarm radiationAlarm(kRadiationAlarm);
 
@@ -26,9 +24,11 @@ LSM303 m_compass;
 ReactorProtocol m_reactor(kAddressRobot);
 BluetoothMaster m_btMaster;
 
+QueueList<BTPacket> m_packetQueue;
+
 //ISR Variables
-volatile long interruptCount = 0;
-static const int kTimerPeriod = 1000000;
+volatile unsigned long interruptCount = 0;
+static const int kTimerPeriod = 20000;
 int kCurrentRobotState = kStartup;
 
 byte _heartbeatPacket[10];
@@ -151,10 +151,14 @@ void periodicUpdate()
 {
 	//Do things here with interruptcount.
 	interruptCount++;
-	if (_sendhb) 
+	if (_sendhb && (interruptCount % 50) == 0) 
 	{ 
-		sendHeartbeat(); 
-		sendMessage(kBTRadiationAlert, kRadiationCarryingNew);
+		sendHeartbeat();
+	}
+	if (!m_packetQueue.isEmpty())
+	{
+		BTPacket p = m_packetQueue.pop();
+		m_btMaster.sendPkt(p.packetData, p.packetSize);
 	}
 }
 
@@ -165,17 +169,19 @@ void periodicUpdate()
 void sendHeartbeat()
 {
 	m_btMaster.sendPkt(_heartbeatPacket, _heartbeatSize);
+	BTPacket tmp = {_heartbeatPacket, _heartbeatSize};
+	m_packetQueue.push(tmp);
 }
 
-void sendMessage(byte type, byte pktData)
+void sendMessage(byte destination, byte type, byte data)
 {
-	byte packet[10];
-	int  size;
-	byte data[3];
-	data[0] = pktData;
-	m_reactor.setDst(0x00);
-	size = m_reactor.createPkt(type, data, packet);
-	m_btMaster.sendPkt(packet, size);
+	m_reactor.setDst(destination);
+	byte tmpData[3];
+	tmpData[0] = data;
+	byte pkt[10];
+	int size = m_reactor.createPkt(type, tmpData, pkt);
+	BTPacket packet = {pkt, size};
+	m_packetQueue.push(packet);
 }
 
 void calibrate_qtrrc_sensor()

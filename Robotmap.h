@@ -15,7 +15,9 @@
 #include "TimerThree.h"
 #include "Encoder.h"
 #include "Alarm.h"
-#include <Wire.h>
+#include "Wire.h"
+#include "QTRSensors.h"
+#include "QueueList.h"
 
 #define DEBUG 1
 #define TEAM_NUMBER 2
@@ -140,6 +142,13 @@ enum OperationStatusMessages
 	kOperationDrivingToStorage = 0x04,
 	kOperationDrivingToSupply = 0x05,
 	kOperationIdle = 0x06
+};
+
+///A structure to hold a bluetooth packet.
+struct BTPacket
+{
+	byte* packetData;
+	int packetSize;
 };
 
 /**
