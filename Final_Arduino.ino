@@ -21,6 +21,7 @@ Servo m_lineup;
 Servo m_conveyor;
 
 LSM303 m_compass;
+Encoder m_trackEncoder(kEncoder1, kEncoder2);
 
 ReactorProtocol m_reactor(kAddressRobot);
 BluetoothMaster m_btMaster;

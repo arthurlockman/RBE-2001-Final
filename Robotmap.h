@@ -56,7 +56,8 @@ enum Motors
 ///The digital inputs on the robot.
 enum DigitalInputs
 {
-	kDummyInput = 1,
+	kEncoder1 = 0, //<Digital Pin 2
+	kEncoder2 = 1, //<Digital Pin 3
 	kLineSensor7 = 22,
 	kLineSensor6 = 23,
 	kLineSensor5 = 24,
