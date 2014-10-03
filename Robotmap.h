@@ -18,6 +18,7 @@
 #include "Wire.h"
 #include "QTRSensors.h"
 #include "QueueList.h"
+#include "BumpSensor.h"
 
 #define DEBUG 1
 #define TEAM_NUMBER 2
@@ -73,7 +74,9 @@ enum DigitalInputs
 ///The Analog inputs on the robot.
 enum AnalogInputs
 {
-	kLineSensorLeft = 1
+	kAccX = 0,
+	kAccY = 1,
+	kAccZ = 2
 };
 
 ///The joystick axis on the robot.

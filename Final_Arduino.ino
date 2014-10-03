@@ -22,6 +22,7 @@ Servo m_conveyor;
 
 LSM303 m_compass;
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
+BumpSensor m_bumpSensor(kAccX, kAccY, kAccZ, 50);
 
 ReactorProtocol m_reactor(kAddressRobot);
 BluetoothMaster m_btMaster;
