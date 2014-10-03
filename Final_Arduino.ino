@@ -29,7 +29,7 @@ BluetoothMaster m_btMaster;
 //ISR Variables
 volatile long interruptCount = 0;
 static const int kTimerPeriod = 1000000;
-int kCurrentRobotState = kTankDrive;
+int kCurrentRobotState = kStartup;
 
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
@@ -72,6 +72,7 @@ void setup()
   	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
   	Serial.println("Compass initialized.");
 
+  	pinMode(kStartButtonInput, INPUT_PULLUP);
   	// turnAround();
   	// delay(3000);
   	// turnAround();
@@ -81,9 +82,6 @@ void loop()
 {
 	m_compass.read();
   	float heading = m_compass.heading();
-  
-  	Serial.println(heading);
-  	delay(100);
 	//unsigned int position = read_position();
 	//track_line(position);
 	switch (kCurrentRobotState) 
@@ -93,7 +91,7 @@ void loop()
 			kCurrentRobotState = kWaitForBluetooth;
 			break;
 		case kWaitForBluetooth:
-			if (Serial.available() > 0 && _sendhb == 0)
+			if (!digitalRead(kStartButtonInput) && _sendhb == 0)
 			{
 				_sendhb = 1;
 				Serial.println("Sending heartbeat...");
@@ -122,7 +120,7 @@ void loop()
 				 {
 				   if(ppm.getChannel(4) < 90)
 				   {
-				     FourBar_value = 10;
+				     FourBar_value = 0;
 				   }
 				   else
 				   {
@@ -136,7 +134,7 @@ void loop()
 				m_rearRight.write(180 - rightdrive);
 				m_claw.write(claw_value);
 				m_conveyor.write(180 - conveyer_value);
-				//m_lineup.write(FourBar_value);
+				m_lineup.write(FourBar_value);
 			break;
 	}
 }
@@ -153,7 +151,11 @@ void periodicUpdate()
 {
 	//Do things here with interruptcount.
 	interruptCount++;
-	if (_sendhb) { sendHeartbeat(); }
+	if (_sendhb) 
+	{ 
+		sendHeartbeat(); 
+		sendMessage(kBTRadiationAlert, kRadiationCarryingNew);
+	}
 }
 
 /**
@@ -163,6 +165,17 @@ void periodicUpdate()
 void sendHeartbeat()
 {
 	m_btMaster.sendPkt(_heartbeatPacket, _heartbeatSize);
+}
+
+void sendMessage(byte type, byte pktData)
+{
+	byte packet[10];
+	int  size;
+	byte data[3];
+	data[0] = pktData;
+	m_reactor.setDst(0x00);
+	size = m_reactor.createPkt(type, data, packet);
+	m_btMaster.sendPkt(packet, size);
 }
 
 void calibrate_qtrrc_sensor()

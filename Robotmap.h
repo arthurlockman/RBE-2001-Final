@@ -63,7 +63,8 @@ enum DigitalInputs
 	kLineSensor2 = 27,
 	kLineSensor1 = 28,
 	kLineSensor0 = 29,
-	kLineSensorLED = 30
+	kLineSensorLED = 30,
+	kStartButtonInput = 37
 };
 
 ///The Analog inputs on the robot.
