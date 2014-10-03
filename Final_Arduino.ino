@@ -34,7 +34,7 @@ volatile unsigned long interruptCount = 0;
 static const int kTimerPeriod = 100000;
 static const int kSecond = 1000000;
 int kCurrentRobotState = kStartup;
-static const int kHeartbeatPeriod = kTimerPeriod / kSecond;
+static const int kHeartbeatPeriod =  kSecond/kTimerPeriod;
 
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
@@ -249,15 +249,17 @@ void track_line(unsigned int position)
 	Serial.print(position);
 	Serial.print('\t');
 	int adjustedPosition = position - 3500;
-	int leftDrive = (20 - (adjustedPosition * kLineTrackingP)) + 90;
-	int rightDrive = (20 + (adjustedPosition * kLineTrackingP)) + 90;
+	int leftDrive = (20 - (adjustedPosition * kLineTrackingP));
+	int rightDrive = (20 + (adjustedPosition * kLineTrackingP));
 	tankDrive(leftDrive, rightDrive);
 }
 
 void tankDrive(int leftSpeed, int rightSpeed)
 {
-	(leftSpeed < 0) ? leftSpeed = 0 : leftSpeed = leftSpeed;
-	(rightSpeed < 0) ? rightSpeed = 0 : rightSpeed = rightSpeed;
+	leftSpeed=leftSpeed+90;
+	rightSpeed=rightSpeed+90;
+	(leftSpeed < 0) ? leftSpeed = 0 : (leftSpeed>180) ? leftSpeed=180 : leftSpeed = leftSpeed;
+	(rightSpeed < 0) ? rightSpeed = 0 : (rightSpeed>180) ? rightSpeed=180 : rightSpeed = rightSpeed;
 	m_frontRight.write(rightSpeed);
 	m_frontLeft.write(180 - leftSpeed);
 	m_rearLeft.write(180 - leftSpeed);
@@ -330,5 +332,6 @@ void turnAround()
 	turnRight();
 	turnRight();
 }
+
 
 

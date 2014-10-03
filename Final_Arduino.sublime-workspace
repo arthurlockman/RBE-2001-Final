@@ -4,6 +4,38 @@
 		"selected_items":
 		[
 			[
+				"right",
+				"rightSpeed"
+			],
+			[
+				"rig",
+				"rightSpeed"
+			],
+			[
+				"left",
+				"leftSpeed"
+			],
+			[
+				"ch",
+				"changeIntTime"
+			],
+			[
+				"set",
+				"setCursor"
+			],
+			[
+				"vo",
+				"volatile"
+			],
+			[
+				"tim",
+				"timer1"
+			],
+			[
+				"timer",
+				"timerISR"
+			],
+			[
 				"summar",
 				"summaries"
 			],
@@ -482,55 +514,16 @@
 			[
 				"webview",
 				"webviewCloseHandler"
-			],
-			[
-				"m_right",
-				"m_rightRangefinder"
-			],
-			[
-				"m_line",
-				"m_lineFollower"
-			],
-			[
-				"Power",
-				"PowerMotors"
-			],
-			[
-				"stop",
-				"stopTracking"
-			],
-			[
-				"kTrackTo",
-				"kTrackToTurningPoint"
-			],
-			[
-				"kTrack",
-				"kTrackToPOSE"
-			],
-			[
-				"m_le",
-				"m_leftSensor"
-			],
-			[
-				"LineFol",
-				"m_lineFollower"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "RoboSWAG.ino",
+			"file": "Final_Arduino.ino",
 			"settings":
 			{
-				"buffer_size": 82,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"settings":
-			{
-				"buffer_size": 0,
+				"buffer_size": 7362,
 				"line_ending": "Unix"
 			}
 		},
@@ -538,7 +531,7 @@
 			"file": "Robotmap.h",
 			"settings":
 			{
-				"buffer_size": 2131,
+				"buffer_size": 4193,
 				"line_ending": "Unix"
 			}
 		}
@@ -797,12 +790,13 @@
 		"side_bar_visible": true,
 		"status_bar_visible": false
 	},
-	"expanded_folders":
-	[
-		"/Users/arthurlockman/Documents/Codebase/RBE2001_Code/Final_Arduino"
-	],
 	"file_history":
 	[
+		"/home/logan/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/logan/Arduino/HW6/HW6.ino",
+		"/home/logan/Documents/Final_Arduino/Robotmap.h",
+		"/home/logan/Documents/Final_Arduino/Final_Arduino.ino",
+		"/home/logan/Documents/Final_Arduino/RoboSWAG.ino",
 		"/Users/arthurlockman/Documents/Codebase/RBE2001_Code/Final_Arduino/Final_Arduino.sublime-project",
 		"/Users/arthurlockman/Dropbox/WPI/B-Term 2013/RBE 1001/1001 Group Work/Final Project/RoboSWAG/LimitSwitch.cpp",
 		"/Users/arthurlockman/Dropbox/WPI/B-Term 2013/RBE 1001/1001 Group Work/Final Project/RoboSWAG/LimitSwitch.h",
@@ -925,16 +919,11 @@
 		"/Volumes/Catalyst_One/Field Study Support/FS1 - Data/Oxford_Hills/CatOneLogs/CatOne_CAT1VE6012/CATONE_CAT1VE6012_20140618_100054_SUMMARY.json",
 		"/Volumes/Catalyst_One/Field Study Support/FS1 - Data/Oxford_Hills/CatOneLogs/CatOne_CAT1VE6012/CATONE_CAT1VE6012_20140617_153937_SUMMARY.json",
 		"/Users/arthurlockman/Downloads/TemplateHaar.cpp",
-		"/Users/arthurlockman/Downloads/TemplateHaar.h",
-		"/private/var/folders/j_/h79mscds1nvf9lm0q51shrdh0000gs/T/f95df1e9-aa09-4959-9433-56d87c887c2d/home/robot/test_ws/src/template_haar/src/TemplateHaar.cpp",
-		"/Volumes/groups/Catalyst_One/A Lockman/CatOne_CAT1VE6009/messages_2014-05-15-03_26_18.log",
-		"/Users/arthurlockman/Desktop/L1D2/87-92671-00_15141880077_P_Aux_CS.csv",
-		"/Users/arthurlockman/Desktop/L1D2/87-92671-00_15141880081_06122014_145936_P_Aux_CS.csv",
-		"/Users/arthurlockman/Desktop/L1D2/87-92671-00_15141880081_06122014_151732_P_Aux_CS.csv"
+		"/Users/arthurlockman/Downloads/TemplateHaar.h"
 	],
 	"find":
 	{
-		"height": 25.0
+		"height": 26.0
 	},
 	"find_in_files":
 	{
@@ -1100,43 +1089,45 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "RoboSWAG.ino",
+					"file": "Final_Arduino.ino",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 82,
+						"buffer_size": 7362,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								82,
-								82
+								1216,
+								1216
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Arduino-like IDE/Arduino.tmLanguage"
+							"syntax": "Packages/Arduino-like IDE/Arduino.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 300.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
+					"file": "Robotmap.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 0,
+						"buffer_size": 4193,
 						"regions":
 						{
 						},
@@ -1149,34 +1140,6 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "Robotmap.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2131,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								992,
-								992
-							]
-						],
-						"settings":
-						{
 							"syntax": "Packages/C++/C++.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
@@ -1184,7 +1147,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -1192,7 +1155,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 25.0
+		"height": 26.0
 	},
 	"input":
 	{
@@ -1248,6 +1211,10 @@
 	"output.Final_Arduino":
 	{
 		"height": 112.0
+	},
+	"output.HW6":
+	{
+		"height": 118.0
 	},
 	"output.Homework 3":
 	{
@@ -1356,7 +1323,7 @@
 	"project": "Final_Arduino.sublime-project",
 	"replace":
 	{
-		"height": 46.0
+		"height": 48.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1387,7 +1354,6 @@
 		],
 		"width": 392.0
 	},
-	"selected_group": 0,
 	"settings":
 	{
 	},
