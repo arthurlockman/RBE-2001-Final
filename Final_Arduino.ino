@@ -5,8 +5,9 @@
 #define NUM_SENSORS 8
 #define TIMEOUT 2500  
 
-QTRSensorsRC m_lineSensor((unsigned char[]) {kLineSensor0, kLineSensor1, kLineSensor2, 
-	kLineSensor3, kLineSensor4, kLineSensor5, kLineSensor6, kLineSensor7},
+QTRSensorsRC m_lineSensor((unsigned char[]) {kLineSensor0, kLineSensor1, 
+	kLineSensor2, kLineSensor3, kLineSensor4, kLineSensor5, kLineSensor6, 
+	kLineSensor7},
 	NUM_SENSORS, TIMEOUT, kLineSensorLED); 
 unsigned int sensorValues[NUM_SENSORS];
 
@@ -63,7 +64,8 @@ void setup()
 	Timer3.initialize(kTimerPeriod);
 	Timer3.attachInterrupt(periodicUpdate);
 	m_reactor.setDst(0x00);
-	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
+	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, 
+		_heartbeatData, _heartbeatPacket);
 
 	Wire.begin();
 	m_compass.init();
@@ -301,7 +303,8 @@ void decide()
 void turnRight()
 {
 	float initial_heading = m_compass.heading();
-	while(abs(initial_heading - m_compass.heading()) < 85 ||  abs(initial_heading - m_compass.heading()) > 95)
+	while(abs(initial_heading - m_compass.heading()) < 85 ||  
+		abs(initial_heading - m_compass.heading()) > 95)
 	{
 		tankDrive(40, -40);
 	}
@@ -311,7 +314,8 @@ void turnRight()
 void turnLeft()
 {
 	float initial_heading = m_compass.heading();
-	while(abs(initial_heading - m_compass.heading()) < 85 ||  abs(initial_heading - m_compass.heading()) > 95)
+	while(abs(initial_heading - m_compass.heading()) < 85 ||  
+		abs(initial_heading - m_compass.heading()) > 95)
 	{
 		tankDrive(-40, 40);
 	}
