@@ -44,13 +44,13 @@ int _sendhb = 0;
 Direction StartingDirection = kNorth;
 Direction currentDirection;
 
- int leftdrive = 90;  
- int rightdrive = 90;  
- int claw_value = 0;
- int conveyer_value = 90;
- int FourBar_value = 0;
+int leftdrive = 90;  
+int rightdrive = 90;  
+int claw_value = 0;
+int conveyer_value = 90;
+int FourBar_value = 0;
 
- PPM ppm(2); 
+PPM ppm(2); 
 
 void setup()
 {
@@ -73,21 +73,21 @@ void setup()
 
 	Wire.begin();
 	m_compass.init();
-    m_compass.enableDefault();
-    m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
-  	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
-  	Serial.println("Compass initialized.");
+	m_compass.enableDefault();
+	m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
+	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
+	Serial.println("Compass initialized.");
 
-  	pinMode(kStartButtonInput, INPUT_PULLUP);
-  	// turnAround();
-  	// delay(3000);
-  	// turnAround();
+	pinMode(kStartButtonInput, INPUT_PULLUP);
+	// turnAround();
+	// delay(3000);
+	// turnAround();
 }
 
 void loop()
 {
 	m_compass.read();
-  	float heading = m_compass.heading();
+	float heading = m_compass.heading();
 	//unsigned int position = read_position();
 	//track_line(position);
 	switch (kCurrentRobotState) 
@@ -112,11 +112,11 @@ void loop()
 				 {
 				   if(ppm.getChannel(5) < 90)
 				   {
-				   		claw_value = 0;
+						claw_value = 0;
 				   }
 				   else
 				   {
-				   		claw_value = 180;
+						claw_value = 180;
 				   }
 				 }
 				 
@@ -126,11 +126,11 @@ void loop()
 				 {
 				   if(ppm.getChannel(4) < 90)
 				   {
-				     FourBar_value = 0;
+					 FourBar_value = 0;
 				   }
 				   else
 				   {
-				     FourBar_value = 80;
+					 FourBar_value = 80;
 					}
 				}
 				 
