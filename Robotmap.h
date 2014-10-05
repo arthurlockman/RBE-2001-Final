@@ -94,7 +94,8 @@ enum JoystickAxis
 ///The digital output pins on the robot.
 enum DigitalOutPins
 {
-	kRadiationAlarm = 3 ///< The pin that has the radiation alarm on it.
+	kRadiationAlarm = 3, ///< The pin that has the radiation alarm on it.
+	kCompassPower = 52
 };
 
 ///Bluetooth Packet Types

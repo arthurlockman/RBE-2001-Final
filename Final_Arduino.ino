@@ -22,12 +22,10 @@ Servo m_rearLeft;
 Servo m_claw;
 Servo m_lineup;
 Servo m_conveyor;
-// Data: 44, 45, 46, 47 
-// Control: 50, 51
 LiquidCrystal lcd(40, 41, 39, 38, 37, 36);
 
 LSM303 m_compass;
-Encoder m_trackEncoder(kEncoder1, kEncoder2);
+// Encoder m_trackEncoder(kEncoder1, kEncoder2);
 BumpSensor m_bumpSensor(kAccX, kAccY, kAccZ, 50);
 
 ReactorProtocol m_reactor(kAddressRobot);
@@ -65,8 +63,9 @@ void setup()
 {
 	Serial.begin(115200);
 	Serial1.begin(115200);
+	pinMode(kCompassPower, OUTPUT);
 
-	// calibrate_qtrrc_sensor();
+	calibrate_qtrrc_sensor();
 	m_frontRight.attach(kFrontRightMotor);
 	m_frontLeft.attach(kFrontLeftMotor);
 	m_rearRight.attach(kRearRightMotor);
@@ -80,26 +79,38 @@ void setup()
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 
 	lcd.begin(16, 2);
+	// lcd.print("Compass init...");
+	// delay(2000);
+	// digitalWrite(kCompassPower, HIGH);
+	// delay(100);
 
-	Wire.begin();
-	m_compass.init();
-	m_compass.enableDefault();
-	m_compass.m_min = (LSM303::vector<int16_t>){-1419, -1597, -967};
-	m_compass.m_max = (LSM303::vector<int16_t>){+2878, +3015, +2995};
-	Serial.println("Compass initialized.");
+	// Wire.begin();
+	// m_compass.init();
+	// m_compass.enableDefault();
+	// m_compass.m_min = (LSM303::vector<int16_t>){-1419, -1597, -967};
+	// m_compass.m_max = (LSM303::vector<int16_t>){+2878, +3015, +2995};
+	// m_compass.read();
+	// delay(1000);
+	// Serial.print("Compass initialized. Heading at ");
+	// Serial.println(m_compass.heading());
 
 	pinMode(kStartButtonInput, INPUT_PULLUP);
-
-	turnRight();
-	//turnAround();
-	delay(10000);
-	//turnAround();
+	while(1)
+	{
+		unsigned int position = read_position();
+		// track_line(position);
+		for (int i = 0; i < NUM_SENSORS; i++)
+		{
+			Serial.print((int)sensorValues[i]);
+			Serial.print('\t');
+		}
+		Serial.println();
+		delay(100);
+	}
 }
 
 void loop()
 {
-	lcd.clear();
-	lcd.setCursor(0, 1);
 	byte _incomingPacket[10];
 	byte _incomingType;
 	byte _incomingData[3];
@@ -125,15 +136,13 @@ void loop()
 		}
 	}
 
-	m_compass.read();
-	float heading = m_compass.heading();
 	//unsigned int position = read_position();
 	//track_line(position);
 	switch (kCurrentRobotState)
 	{
 	case kStartup:
 		Serial.println("Robot initialized. Waiting for bluetooth...");
-		changeState(kWaitForBluetooth);
+		// changeState(kWaitForBluetooth);
 		break;
 	case kWaitForBluetooth:
 		if (!digitalRead(kStartButtonInput) && _sendhb == 0)
@@ -192,6 +201,7 @@ void autonomous()
 		// Grab tube
 
 		// Raise Conveyer
+		//grabLowerTube();
 
 	// Turn around
 
@@ -232,6 +242,36 @@ void autonomous()
 	// End
 
 
+}
+
+/*
+void grabLowerTube()
+{
+	setConveyerPosition(DOWN);
+	setGripper(true);
+	setConveyerPosition(HOME);
+}
+
+// Send the conveyer to some position
+void setConveyerPosition(DATA pos)
+{
+
+}
+*/
+
+// Sets the gripper
+// true -> closed
+// false -> open
+void setGripper(bool closed)
+{
+	if(closed)
+	{
+		m_claw.write(180);
+	}
+	else
+	{
+		m_claw.write(0);
+	}
 }
 
 /**
@@ -334,16 +374,12 @@ void updateAvailablity(byte data, TubeAvailability* storage)
 void calibrate_qtrrc_sensor()
 {
 	delay(500);
-	pinMode(13, OUTPUT);
-	digitalWrite(13, HIGH);
-	for (int i = 0; i < 400; i++)
+	for (int i = 0; i < 200; i++)
 	{
 		m_lineSensor.calibrate();
 	}
-	digitalWrite(13, LOW);
 
 	// print the calibration minimum values measured when emitters were on
-	Serial.begin(9600);
 	for (int i = 0; i < NUM_SENSORS; i++)
 	{
 		Serial.print(m_lineSensor.calibratedMinimumOn[i]);
@@ -391,8 +427,7 @@ void track_to_line()
 
 void track_line(unsigned int position)
 {
-	Serial.print(position);
-	Serial.print('\t');
+	Serial.println(position);
 	int adjustedPosition = position - 3500;
 	int leftDrive = (20 - (adjustedPosition * kLineTrackingP));
 	int rightDrive = (20 + (adjustedPosition * kLineTrackingP));
@@ -440,56 +475,45 @@ void stopAll()
 	m_lineup.write(90);
 }
 
-void motion()
+void turn(int angle)
 {
-	track_to_line();
-	decide();
-	return;
-}
-
-void decide()
-{
-
-}
-
-void turnRight()
-{
+	// lcd.clear();
+	// lcd.setCursor(0,1);
 	m_compass.read();
 	float initial_heading = m_compass.heading();
-	float desired_heading = ((int)(initial_heading + 90))%360;
-	// Serial.print("Initial Heading: ");
-	// Serial.println(m_compass.heading());
-	// Serial.print("Desired Heading: ");
-	// Serial.println(desired_heading);
-	while (abs(m_compass.heading() - desired_heading) > 5)
+	float desired_heading = (float)angle + initial_heading;
+	if (desired_heading > 360.0) desired_heading -= 360.0;
+	else if (desired_heading < 0.0) desired_heading += 360.0;
+	char tmp[16];
+	sprintf(tmp, "%d %d %d", angle, (int)desired_heading, (int)initial_heading);
+	// lcd.print(tmp);
+	while (abs(m_compass.heading() - desired_heading) > 2.5)
 	{
-		lcd.setCursor(0,1);
-		lcd.clear();
-		lcd.print(m_compass.heading())
-		// Serial.print("Current Heading: ");
-		// Serial.println(m_compass.heading());
-		tankDrive(40, -40);
+		int multiplier = angle < 0 ? -1:1;
+		int motorSpeed = multiplier * 30;
+		tankDrive(motorSpeed, -motorSpeed);
 		m_compass.read();
+		// lcd.setCursor(1,1);
+		// lcd.write(m_compass.heading());
 	}
-	// Serial.print("Final Heading: ");
-	// Serial.println(m_compass.heading());
 	stopDrive();
 }
-
-void turnLeft()
-{
-	float initial_heading = m_compass.heading();
-	while (abs(initial_heading - m_compass.heading()) < 80 || abs(initial_heading - m_compass.heading()) > 100)
-	{
-		tankDrive(-40, 40);
-	}
-}
-
+/*
 void turnAround()
 {
-	turnRight();
-	turnRight();
+	// Turn until off of line
+	while(read_position() < 6500)
+	{
+		turn(7);
+	}
+
+	// Turn until at 3500
+	while(WithinTolerance(read_position(),3500, 100))
+	{
+		turn(7);
+	}
 }
+*/
 
 
 
