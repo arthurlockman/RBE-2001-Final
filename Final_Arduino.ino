@@ -24,7 +24,7 @@ Servo m_lineup;
 Servo m_conveyor;
 // Data: 44, 45, 46, 47 
 // Control: 50, 51
-LiquidCrystal lcd(50, 51, 47,46,45,44);
+LiquidCrystal lcd(40, 41, 39, 38, 37, 36);
 
 LSM303 m_compass;
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
@@ -182,6 +182,56 @@ void loop()
 		m_lineup.write(FourBar_value);
 		break;
 	}
+}
+
+void autonomous()
+{
+	// Grab Tube
+		// Lower Conveyer
+
+		// Grab tube
+
+		// Raise Conveyer
+
+	// Turn around
+
+	// Drive to open tube
+		// Determine open tube
+
+		// Drive to line
+
+		// Turn right
+
+		// Drive to stop
+
+	// Insert tube
+
+	// Turn around
+
+	// Drive to middle
+
+	// Drive to filled reactor
+		// Determine filled reactor
+
+		// Turn (or not)
+
+		// Drive to stop
+
+	// Grab tube
+
+	// Turn around
+
+	// Return to middle
+
+	// Turn right
+
+	// Drive to stop
+
+	// Insert tube
+
+	// End
+
+
 }
 
 /**
@@ -406,20 +456,23 @@ void turnRight()
 {
 	m_compass.read();
 	float initial_heading = m_compass.heading();
-	float desired_heading = ((int)(initial_heading + 95))%360;
-	Serial.print("Initial Heading: ");
-	Serial.println(m_compass.heading());
-	Serial.print("Desired Heading: ");
-	Serial.println(desired_heading);
+	float desired_heading = ((int)(initial_heading + 90))%360;
+	// Serial.print("Initial Heading: ");
+	// Serial.println(m_compass.heading());
+	// Serial.print("Desired Heading: ");
+	// Serial.println(desired_heading);
 	while (abs(m_compass.heading() - desired_heading) > 5)
 	{
-		Serial.print("Current Heading: ");
-		Serial.println(m_compass.heading());
+		lcd.setCursor(0,1);
+		lcd.clear();
+		lcd.print(m_compass.heading())
+		// Serial.print("Current Heading: ");
+		// Serial.println(m_compass.heading());
 		tankDrive(40, -40);
 		m_compass.read();
 	}
-	Serial.print("Final Heading: ");
-	Serial.println(m_compass.heading());
+	// Serial.print("Final Heading: ");
+	// Serial.println(m_compass.heading());
 	stopDrive();
 }
 
