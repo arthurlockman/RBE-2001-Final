@@ -156,6 +156,15 @@ struct BTPacket
 	int packetSize;
 };
 
+///Availability information about the tubes.
+struct TubeAvailability
+{
+	int tubeOne;
+	int tubeTwo;
+	int tubeThree;
+	int tubeFour;
+};
+
 /**
  * @brief Tells whether or not a value is within a certain tolerance of another value.
  * @param value The value to check.

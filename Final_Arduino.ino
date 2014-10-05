@@ -32,13 +32,15 @@ BluetoothMaster m_btMaster;
 
 QueueList<BTPacket> m_packetQueue;
 
-//ISR Variables
 volatile unsigned long interruptCount = 0;
 static const unsigned long kTimerPeriod = 100000;
 static const unsigned long kSecond = 1000000;
+static const unsigned long kHeartbeatPeriod =  kSecond / kTimerPeriod;
+
 int kCurrentRobotState = kStartup;
 int kPreviousRobotState = kStartup;
-static const unsigned long kHeartbeatPeriod =  kSecond / kTimerPeriod;
+TubeAvailability m_supplyTubes;
+TubeAvailability m_storageTubes;
 
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
@@ -99,8 +101,10 @@ void loop()
 			switch (_incomingType)
 			{
 			case kBTStorageTubeAvailable:
+				updateAvailablity(_incomingData[0], &m_storageTubes);
 				break;
 			case kBTSupplyTubeAvailable:
+				updateAvailablity(_incomingData[0], &m_supplyTubes);
 				break;
 			case kBTStopMovement:
 				changeState(kPaused);
@@ -230,6 +234,16 @@ void sendHeartbeat()
 	sendMessage(0x00, 0x03, 0x2C);
 }
 
+/**
+ * @brief Sends a bluetooth message.
+ * @details Creates a bluetooth message packet and adds it
+ * to the message queue. It will be sent out when appropriate
+ * by the ISR.
+ * 
+ * @param destination The destination address.
+ * @param type The message type.
+ * @param data The message data.
+ */
 void sendMessage(byte destination, byte type, byte data)
 {
 	m_reactor.setDst(destination);
@@ -239,6 +253,23 @@ void sendMessage(byte destination, byte type, byte data)
 	int size = m_reactor.createPkt(type, tmpData, pkt);
 	BTPacket packet = {pkt, size};
 	m_packetQueue.push(packet);
+}
+
+/**
+ * @brief Updates availability of storage tubes.
+ * @details Update the availability of storage tubes
+ * stored in memory.
+ * 
+ * @param data The incoming data.
+ * @param storage The destination structure to put
+ * storage data in.
+ */
+void updateAvailablity(byte data, TubeAvailability* storage)
+{
+	storage->tubeOne = bitRead(data, 0);
+	storage->tubeTwo = bitRead(data, 1);
+	storage->tubeThree = bitRead(data, 2);
+	storage->tubeFour = bitRead(data, 3);
 }
 
 void calibrate_qtrrc_sensor()
