@@ -22,6 +22,9 @@ Servo m_rearLeft;
 Servo m_claw;
 Servo m_lineup;
 Servo m_conveyor;
+// Data: 44, 45, 46, 47 
+// Control: 50, 51
+LiquidCrystal lcd(50, 51, 44,45,46,47);
 
 LSM303 m_compass;
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
@@ -69,28 +72,35 @@ void setup()
 	m_rearRight.attach(kRearRightMotor);
 	m_rearLeft.attach(kRearLeftMotor);
 	m_claw.attach(kClawMotor);
-	m_lineup.attach(kFourBarMotor);
+	//m_lineup.attach(kFourBarMotor);
 	m_conveyor.attach(kConveyerMotor);
 	Timer3.initialize(kTimerPeriod);
 	Timer3.attachInterrupt(periodicUpdate);
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 
+	lcd.begin(16, 2);
+
 	Wire.begin();
 	m_compass.init();
 	m_compass.enableDefault();
-	m_compass.m_min = (LSM303::vector<int16_t>){ -32767, -32767, -32767 };
-	m_compass.m_max = (LSM303::vector<int16_t>){ +32767, +32767, +32767 };
+	m_compass.m_min = (LSM303::vector<int16_t>){-1419, -1597, -967};
+	m_compass.m_max = (LSM303::vector<int16_t>){+2878, +3015, +2995};
 	Serial.println("Compass initialized.");
 
 	pinMode(kStartButtonInput, INPUT_PULLUP);
-	// turnAround();
-	// delay(3000);
-	// turnAround();
+
+	lcd.println("Hello World.");
+	delay(5000);
+	//turnAround();
+	//delay(3000);
+	//turnAround();
 }
 
 void loop()
 {
+	lcd.clear();
+	lcd.setCursor(0, 1);
 	byte _incomingPacket[10];
 	byte _incomingType;
 	byte _incomingData[3];
@@ -394,19 +404,22 @@ void decide()
 void turnRight()
 {
 	float initial_heading = m_compass.heading();
-	while (abs(initial_heading - m_compass.heading()) < 85 ||
-			abs(initial_heading - m_compass.heading()) > 95)
+	lcd.println(m_compass.heading());
+	while (abs(initial_heading - m_compass.heading()) < 80 ||
+			abs(initial_heading - m_compass.heading()) > 100)
 	{
+
 		tankDrive(40, -40);
 	}
+	lcd.println(m_compass.heading());
 
 }
 
 void turnLeft()
 {
 	float initial_heading = m_compass.heading();
-	while (abs(initial_heading - m_compass.heading()) < 85 ||
-			abs(initial_heading - m_compass.heading()) > 95)
+	while (abs(initial_heading - m_compass.heading()) < 80 ||
+			abs(initial_heading - m_compass.heading()) > 100)
 	{
 		tankDrive(-40, 40);
 	}
