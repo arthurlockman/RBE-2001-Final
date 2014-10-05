@@ -31,7 +31,8 @@ enum RobotStates
 {
 	kStartup,
 	kWaitForBluetooth,
-	kTankDrive
+	kTankDrive,
+	kPaused,
 };
 
 enum Direction

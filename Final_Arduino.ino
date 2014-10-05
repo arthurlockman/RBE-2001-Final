@@ -3,12 +3,15 @@
 //Alarm radiationAlarm(kRadiationAlarm);
 
 #define NUM_SENSORS 8
-#define TIMEOUT 2500  
+#define TIMEOUT 2500
 
-QTRSensorsRC m_lineSensor((unsigned char[]) {kLineSensor0, kLineSensor1, 
-	kLineSensor2, kLineSensor3, kLineSensor4, kLineSensor5, kLineSensor6, 
-	kLineSensor7},
-	NUM_SENSORS, TIMEOUT, kLineSensorLED); 
+QTRSensorsRC m_lineSensor((unsigned char[])
+{
+	kLineSensor0, kLineSensor1, kLineSensor2, 
+	kLineSensor3, kLineSensor4, kLineSensor5, 
+	kLineSensor6, kLineSensor7
+},
+NUM_SENSORS, TIMEOUT, kLineSensorLED);
 unsigned int sensorValues[NUM_SENSORS];
 
 //Motors
@@ -34,6 +37,7 @@ volatile unsigned long interruptCount = 0;
 static const unsigned long kTimerPeriod = 100000;
 static const unsigned long kSecond = 1000000;
 int kCurrentRobotState = kStartup;
+int kPreviousRobotState = kStartup;
 static const unsigned long kHeartbeatPeriod =  kSecond / kTimerPeriod;
 
 byte _heartbeatPacket[10];
@@ -44,13 +48,13 @@ int _sendhb = 0;
 Direction StartingDirection = kNorth;
 Direction currentDirection;
 
-int leftdrive = 90;  
-int rightdrive = 90;  
+int leftdrive = 90;
+int rightdrive = 90;
 int claw_value = 0;
 int conveyer_value = 90;
 int FourBar_value = 0;
 
-PPM ppm(2); 
+PPM ppm(2);
 
 void setup()
 {
@@ -68,14 +72,13 @@ void setup()
 	Timer3.initialize(kTimerPeriod);
 	Timer3.attachInterrupt(periodicUpdate);
 	m_reactor.setDst(0x00);
-	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, 
-		_heartbeatData, _heartbeatPacket);
+	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 
 	Wire.begin();
 	m_compass.init();
 	m_compass.enableDefault();
-	m_compass.m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
-	m_compass.m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};
+	m_compass.m_min = (LSM303::vector<int16_t>){ -32767, -32767, -32767 };
+	m_compass.m_max = (LSM303::vector<int16_t>){ +32767, +32767, +32767 };
 	Serial.println("Compass initialized.");
 
 	pinMode(kStartButtonInput, INPUT_PULLUP);
@@ -86,69 +89,117 @@ void setup()
 
 void loop()
 {
+	byte _incomingPacket[10];
+	byte _incomingType;
+	byte _incomingData[3];
+	if (m_btMaster.readPacket(_incomingPacket))
+	{
+		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType))
+		{
+			switch (_incomingType)
+			{
+			case kBTStorageTubeAvailable:
+				break;
+			case kBTSupplyTubeAvailable:
+				break;
+			case kBTStopMovement:
+				changeState(kPaused);
+				break;
+			case kBTResumeMovement:
+				revertState();
+				break;
+			}
+		}
+	}
+
 	m_compass.read();
 	float heading = m_compass.heading();
 	//unsigned int position = read_position();
 	//track_line(position);
-	switch (kCurrentRobotState) 
+	switch (kCurrentRobotState)
 	{
-		case kStartup:
-			Serial.println("Robot initialized. Waiting for bluetooth...");
-			kCurrentRobotState = kWaitForBluetooth;
-			break;
-		case kWaitForBluetooth:
-			if (!digitalRead(kStartButtonInput) && _sendhb == 0)
-			{
-				_sendhb = 1;
-				Serial.println("Sending heartbeat...");
-				kCurrentRobotState = kTankDrive;
-			}
-			break;
-		case kTankDrive:
-				 leftdrive = ppm.getChannel(2);
-				 rightdrive = ppm.getChannel(3);
+	case kStartup:
+		Serial.println("Robot initialized. Waiting for bluetooth...");
+		changeState(kWaitForBluetooth);
+		break;
+	case kWaitForBluetooth:
+		if (!digitalRead(kStartButtonInput) && _sendhb == 0)
+		{
+			_sendhb = 1;
+			Serial.println("Sending heartbeat...");
+			changeState(kTankDrive);
+		}
+		break;
+	case kTankDrive:
+		leftdrive = ppm.getChannel(2);
+		rightdrive = ppm.getChannel(3);
 
-				 if(abs(ppm.getChannel(5) - claw_value) > 150)
-				 {
-				   if(ppm.getChannel(5) < 90)
-				   {
-						claw_value = 0;
-				   }
-				   else
-				   {
-						claw_value = 180;
-				   }
-				 }
-				 
-				 conveyer_value = ppm.getChannel(6);
-				 
-				 if(abs(ppm.getChannel(4) - 90) > 30)
-				 {
-				   if(ppm.getChannel(4) < 90)
-				   {
-					 FourBar_value = 0;
-				   }
-				   else
-				   {
-					 FourBar_value = 80;
-					}
-				}
-				 
-				m_frontLeft.write(leftdrive); 
-				m_rearLeft.write(leftdrive);  
-				m_frontRight.write(180 - rightdrive);
-				m_rearRight.write(180 - rightdrive);
-				m_claw.write(claw_value);
-				m_conveyor.write(180 - conveyer_value);
-				m_lineup.write(FourBar_value);
-			break;
+		if (abs(ppm.getChannel(5) - claw_value) > 150)
+		{
+			if (ppm.getChannel(5) < 90)
+			{
+				claw_value = 0;
+			}
+			else
+			{
+				claw_value = 180;
+			}
+		}
+
+		conveyer_value = ppm.getChannel(6);
+
+		if (abs(ppm.getChannel(4) - 90) > 30)
+		{
+			if (ppm.getChannel(4) < 90)
+			{
+				FourBar_value = 0;
+			}
+			else
+			{
+				FourBar_value = 80;
+			}
+		}
+
+		m_frontLeft.write(leftdrive);
+		m_rearLeft.write(leftdrive);
+		m_frontRight.write(180 - rightdrive);
+		m_rearRight.write(180 - rightdrive);
+		m_claw.write(claw_value);
+		m_conveyor.write(180 - conveyer_value);
+		m_lineup.write(FourBar_value);
+		break;
 	}
+}
+
+/**
+ * @brief Changes robot state.
+ * @details Changes the current robot state
+ * and stores the previous one.
+ * 
+ * @param newState The new state to change to.
+ */
+void changeState(int newState)
+{
+	kPreviousRobotState = kCurrentRobotState;
+	kCurrentRobotState = newState;
+}
+
+/**
+ * @brief Revert robot state.
+ * @details This method reverts the robot state
+ * to whatever it was before it was most recently changed.
+ */
+void revertState()
+{
+	int _tmp = kPreviousRobotState;
+	kPreviousRobotState = kCurrentRobotState;
+	kCurrentRobotState = _tmp;
 }
 
 /**
  * @brief Performs tasks that need to be updated
  * on a fixed period.
- * @details Performs tasks that need to be done 
+ * @details Performs tasks that need to be done
  * at fixed time intervals. Checks the number of interrupts
  * and takes the modulus to figure out if a certain
  * task should be done at that time or not.
@@ -157,8 +208,8 @@ void periodicUpdate()
 {
 	//Do things here with interruptcount.
 	interruptCount++;
-	if (_sendhb && (interruptCount % kHeartbeatPeriod) == 0) 
-	{ 
+	if (_sendhb && (interruptCount % kHeartbeatPeriod) == 0)
+	{
 		sendHeartbeat();
 	}
 	if (!m_packetQueue.isEmpty())
@@ -209,7 +260,7 @@ void calibrate_qtrrc_sensor()
 		Serial.print(' ');
 	}
 	Serial.println();
-	
+
 	// print the calibration maximum values measured when emitters were on
 	for (int i = 0; i < NUM_SENSORS; i++)
 	{
@@ -235,10 +286,13 @@ void track_to_line()
 		unsigned int position = read_position();
 		track_line(position);
 		int accum = 0;
-		for (int i = 0; i < NUM_SENSORS; i++) { accum += sensorValues[i]; }
-		if (accum > 5000) 
-		{ 
-			Serial.print("On a line. Stopping.\t"); 
+		for (int i = 0; i < NUM_SENSORS; i++)
+		{
+			accum += sensorValues[i];
+		}
+		if (accum > 5000)
+		{
+			Serial.print("On a line. Stopping.\t");
 			foundLine = 1;
 			stopDrive();
 		}
@@ -257,10 +311,10 @@ void track_line(unsigned int position)
 
 void tankDrive(int leftSpeed, int rightSpeed)
 {
-	leftSpeed=leftSpeed+90;
-	rightSpeed=rightSpeed+90;
-	(leftSpeed < 0) ? leftSpeed = 0 : (leftSpeed>180) ? leftSpeed=180 : leftSpeed = leftSpeed;
-	(rightSpeed < 0) ? rightSpeed = 0 : (rightSpeed>180) ? rightSpeed=180 : rightSpeed = rightSpeed;
+	leftSpeed = leftSpeed + 90;
+	rightSpeed = rightSpeed + 90;
+	(leftSpeed < 0) ? leftSpeed = 0 : (leftSpeed > 180) ? leftSpeed = 180 : leftSpeed = leftSpeed;
+	(rightSpeed < 0) ? rightSpeed = 0 : (rightSpeed > 180) ? rightSpeed = 180 : rightSpeed = rightSpeed;
 	m_frontRight.write(rightSpeed);
 	m_frontLeft.write(180 - leftSpeed);
 	m_rearLeft.write(180 - leftSpeed);
@@ -309,8 +363,8 @@ void decide()
 void turnRight()
 {
 	float initial_heading = m_compass.heading();
-	while(abs(initial_heading - m_compass.heading()) < 85 ||  
-		abs(initial_heading - m_compass.heading()) > 95)
+	while (abs(initial_heading - m_compass.heading()) < 85 ||
+			abs(initial_heading - m_compass.heading()) > 95)
 	{
 		tankDrive(40, -40);
 	}
@@ -320,8 +374,8 @@ void turnRight()
 void turnLeft()
 {
 	float initial_heading = m_compass.heading();
-	while(abs(initial_heading - m_compass.heading()) < 85 ||  
-		abs(initial_heading - m_compass.heading()) > 95)
+	while (abs(initial_heading - m_compass.heading()) < 85 ||
+			abs(initial_heading - m_compass.heading()) > 95)
 	{
 		tankDrive(-40, 40);
 	}
@@ -329,7 +383,7 @@ void turnLeft()
 
 void turnAround()
 {
-	
+
 	turnRight();
 	turnRight();
 }
