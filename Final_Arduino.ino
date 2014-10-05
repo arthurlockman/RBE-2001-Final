@@ -374,7 +374,7 @@ void updateAvailablity(byte data, TubeAvailability* storage)
 void calibrate_qtrrc_sensor()
 {
 	delay(500);
-	for (int i = 0; i < 200; i++)
+	for (int i = 0; i < 400; i++)
 	{
 		m_lineSensor.calibrate();
 	}
