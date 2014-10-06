@@ -79,8 +79,16 @@ void setup()
 
 	lcd.begin(16, 2);
 
-	turn(kTurnLeft);
+	turnAround(kTurnRight, 2);
 	track_to_line();
+	turn(kTurnRight);
+	track_to_line();
+	turnAround(kTurnRight, 2);
+	track_to_line();
+	int initTime = millis();
+	while (millis() - initTime < 250) { tankDrive(30, 30); }
+	track_to_line();
+
 	pinMode(kStartButtonInput, INPUT_PULLUP);
 }
 
@@ -474,12 +482,6 @@ void tankDrive(int leftSpeed, int rightSpeed)
 	m_frontLeft.write(180 - leftSpeed);
 	m_rearLeft.write(180 - leftSpeed);
 	m_rearRight.write(rightSpeed);
-	/*
-	Serial.print(leftSpeed);
-	Serial.print('\t');
-	Serial.print(rightSpeed);
-	Serial.println();
-	*/
 }
 
 void stopDrive()
@@ -518,8 +520,6 @@ void turn(int dir)
 	int intTime = millis();
 	switch (dir)
 	{
-	case kTurn180:
-		break;
 	case kTurnRight:
 		lcd.clear();
 		lcd.setCursor(0,0);
@@ -541,6 +541,50 @@ void turn(int dir)
 		{ 
 			read_position();
 			tankDrive(-30, 30); 
+		}
+		stopDrive();
+		break;
+	}
+}
+
+void turnAround(int dir, int expectedLines)
+{
+	int intTime = millis();
+	switch (dir)
+	{
+	case kTurnRight:
+		while(millis() - intTime < 250) { tankDrive(-30, -30); }
+		stopDrive();
+		for (int i = 0; i < expectedLines; i++)
+		{
+			while (sensorValues[2] < 500)
+			{ 
+				read_position();
+				tankDrive(30, -30); 
+			}
+			while (sensorValues[2] > 450)
+			{ 
+				read_position();
+				tankDrive(30, -30); 
+			}
+		}
+		stopDrive();
+		break;
+	case kTurnLeft:
+		while(millis() - intTime < 250) { tankDrive(-30, -30); }
+		stopDrive();
+		for (int i = 0; i < expectedLines; i++)
+		{
+			while (sensorValues[6] < 500)
+			{ 
+				read_position();
+				tankDrive(-30, 30); 
+			}
+			while (sensorValues[6] > 450)
+			{ 
+				read_position();
+				tankDrive(-30, 30); 
+			}
 		}
 		stopDrive();
 		break;
