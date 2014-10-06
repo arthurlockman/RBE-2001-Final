@@ -48,13 +48,10 @@ int  _heartbeatSize;
 byte _heartbeatData[3];
 int _sendhb = 0;
 
-Direction StartingDirection = kNorth;
-Direction currentDirection;
-
 int leftdrive = 90;
 int rightdrive = 90;
 int claw_value = 0;
-int conveyer_value = 90;
+int conveyor_value = 90;
 int FourBar_value = 0;
 
 PPM ppm(2);
@@ -65,7 +62,7 @@ void setup()
 	Serial1.begin(115200);
 	pinMode(kCompassPower, OUTPUT);
 
-	// calibrate_qtrrc_sensor(); //THIS NEEDS TO BE MOVED
+	calibrate_qtrrc_sensor(); //THIS NEEDS TO BE MOVED
 	m_frontRight.attach(kFrontRightMotor);
 	m_frontLeft.attach(kFrontLeftMotor);
 	m_rearRight.attach(kRearRightMotor);
@@ -82,7 +79,8 @@ void setup()
 
 	lcd.begin(16, 2);
 
-	homeConveyor();
+	turn(kTurnLeft);
+	track_to_line();
 	pinMode(kStartButtonInput, INPUT_PULLUP);
 }
 
@@ -118,7 +116,15 @@ void loop()
 	switch (kCurrentRobotState)
 	{
 	case kStartup:
-		Serial.println("Robot initialized. Waiting for bluetooth...");
+		Serial.println("Homing conveyor...");
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Homing conveyor.");
+		homeConveyor();
+		Serial.println("Robot initialized.");
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Wait for BT...");
 		changeState(kWaitForBluetooth);
 		break;
 	case kWaitForBluetooth:
@@ -130,8 +136,8 @@ void loop()
 		}
 		break;
 	case kTankDrive:
-		leftdrive = ppm.getChannel(2);
-		rightdrive = ppm.getChannel(3);
+		leftdrive = ppm.getChannel(3);
+		rightdrive = ppm.getChannel(2);
 
 		if (abs(ppm.getChannel(5) - claw_value) > 150)
 		{
@@ -145,7 +151,7 @@ void loop()
 			}
 		}
 
-		conveyer_value = ppm.getChannel(6);
+		conveyor_value = ppm.getChannel(6);
 
 		if (abs(ppm.getChannel(4) - 90) > 30)
 		{
@@ -164,7 +170,17 @@ void loop()
 		m_frontRight.write(180 - rightdrive);
 		m_rearRight.write(180 - rightdrive);
 		m_claw.write(claw_value);
-		m_conveyor.write(180 - conveyer_value);
+		if (abs(conveyor_value - 90) > 30)
+		{
+			if (conveyor_value < 90)
+			{
+				driveConveyor(kConveyorDown);
+			}
+			else
+			{
+				driveConveyor(kConveyorHome);
+			}
+		}
 		m_lineup.write(FourBar_value);
 		break;
 	}
@@ -384,6 +400,9 @@ void updateAvailablity(byte data, TubeAvailability* storage)
 
 void calibrate_qtrrc_sensor()
 {
+	lcd.clear();
+	lcd.setCursor(0,0);
+	lcd.print("Calib. line sens");
 	delay(500);
 	for (int i = 0; i < 400; i++)
 	{
@@ -486,45 +505,44 @@ void stopAll()
 	m_lineup.write(90);
 }
 
-void turn(int angle)
+/**
+ * @brief Turns the robot a specified direction.
+ * @details Turns the robot a direction based on 
+ * the input direction. kTurn180 turns the robot 
+ * around 180 degrees.
+ * 
+ * @param dir The direction to turn.
+ */
+void turn(int dir)
 {
-	// lcd.clear();
-	// lcd.setCursor(0,1);
-	m_compass.read();
-	float initial_heading = m_compass.heading();
-	float desired_heading = (float)angle + initial_heading;
-	if (desired_heading > 360.0) desired_heading -= 360.0;
-	else if (desired_heading < 0.0) desired_heading += 360.0;
-	char tmp[16];
-	sprintf(tmp, "%d %d %d", angle, (int)desired_heading, (int)initial_heading);
-	// lcd.print(tmp);
-	while (abs(m_compass.heading() - desired_heading) > 2.5)
+	int intTime = millis();
+	switch (dir)
 	{
-		int multiplier = angle < 0 ? -1:1;
-		int motorSpeed = multiplier * 30;
-		tankDrive(motorSpeed, -motorSpeed);
-		m_compass.read();
-		// lcd.setCursor(1,1);
-		// lcd.write(m_compass.heading());
-	}
-	stopDrive();
-}
-/*
-void turnAround()
-{
-	// Turn until off of line
-	while(read_position() < 6500)
-	{
-		turn(7);
-	}
-
-	// Turn until at 3500
-	while(WithinTolerance(read_position(),3500, 100))
-	{
-		turn(7);
+	case kTurn180:
+		break;
+	case kTurnRight:
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Turning right...");
+		while (millis() - intTime < 500) { track_line(read_position()); }
+		while (sensorValues[2] < 500) 
+		{ 
+			read_position();
+			tankDrive(30, -30); 
+		}
+		stopDrive();
+		break;
+	case kTurnLeft:
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Turning left...");
+		while (millis() - intTime < 500) { track_line(read_position()); }
+		while (sensorValues[6] < 500) 
+		{ 
+			read_position();
+			tankDrive(-30, 30); 
+		}
+		stopDrive();
+		break;
 	}
 }
-*/
-
-
-

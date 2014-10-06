@@ -38,10 +38,8 @@ enum RobotStates
 
 enum Direction
 {
-	kNorth,
-	kSouth,
-	kEast,
-	kWest
+	kTurnRight,
+	kTurnLeft
 };
 
 ///The different motors that are attached to the robot.
@@ -152,7 +150,7 @@ enum OperationStatusMessages
 	kOperationIdle = 0x06
 };
 
-enum kConveyorPositions
+enum ConveyorPositions
 {
 	kConveyorHome = 0,
 	kConveyorDown = 275
