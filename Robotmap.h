@@ -33,6 +33,7 @@ enum RobotStates
 	kWaitForBluetooth,
 	kTankDrive,
 	kPaused,
+	kAutonomous
 };
 
 enum Direction
@@ -58,8 +59,8 @@ enum Motors
 ///The digital inputs on the robot.
 enum DigitalInputs
 {
-	kEncoder1 = 0, //<Digital Pin 2
-	kEncoder2 = 1, //<Digital Pin 3
+	kEncoder1 = 3,
+	kEncoder2 = 20,
 	kLineSensor7 = 22,
 	kLineSensor6 = 23,
 	kLineSensor5 = 24,
@@ -69,6 +70,7 @@ enum DigitalInputs
 	kLineSensor1 = 28,
 	kLineSensor0 = 29,
 	kLineSensorLED = 30,
+	kConveyorLimit = 32,
 	kStartButtonInput = 37
 };
 
@@ -148,6 +150,12 @@ enum OperationStatusMessages
 	kOperationDrivingToStorage = 0x04,
 	kOperationDrivingToSupply = 0x05,
 	kOperationIdle = 0x06
+};
+
+enum kConveyorPositions
+{
+	kConveyorHome = 0,
+	kConveyorDown = 275
 };
 
 ///A structure to hold a bluetooth packet.

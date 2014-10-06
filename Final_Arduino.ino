@@ -25,7 +25,7 @@ Servo m_conveyor;
 LiquidCrystal lcd(40, 41, 39, 38, 37, 36);
 
 LSM303 m_compass;
-// Encoder m_trackEncoder(kEncoder1, kEncoder2);
+Encoder m_trackEncoder(kEncoder1, kEncoder2);
 BumpSensor m_bumpSensor(kAccX, kAccY, kAccZ, 50);
 
 ReactorProtocol m_reactor(kAddressRobot);
@@ -65,48 +65,25 @@ void setup()
 	Serial1.begin(115200);
 	pinMode(kCompassPower, OUTPUT);
 
-	calibrate_qtrrc_sensor();
+	// calibrate_qtrrc_sensor(); //THIS NEEDS TO BE MOVED
 	m_frontRight.attach(kFrontRightMotor);
 	m_frontLeft.attach(kFrontLeftMotor);
 	m_rearRight.attach(kRearRightMotor);
 	m_rearLeft.attach(kRearLeftMotor);
 	m_claw.attach(kClawMotor);
 	//m_lineup.attach(kFourBarMotor);
+	
 	m_conveyor.attach(kConveyerMotor);
 	Timer3.initialize(kTimerPeriod);
 	Timer3.attachInterrupt(periodicUpdate);
+
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 
 	lcd.begin(16, 2);
-	// lcd.print("Compass init...");
-	// delay(2000);
-	// digitalWrite(kCompassPower, HIGH);
-	// delay(100);
 
-	// Wire.begin();
-	// m_compass.init();
-	// m_compass.enableDefault();
-	// m_compass.m_min = (LSM303::vector<int16_t>){-1419, -1597, -967};
-	// m_compass.m_max = (LSM303::vector<int16_t>){+2878, +3015, +2995};
-	// m_compass.read();
-	// delay(1000);
-	// Serial.print("Compass initialized. Heading at ");
-	// Serial.println(m_compass.heading());
-
+	homeConveyor();
 	pinMode(kStartButtonInput, INPUT_PULLUP);
-	while(1)
-	{
-		unsigned int position = read_position();
-		// track_line(position);
-		for (int i = 0; i < NUM_SENSORS; i++)
-		{
-			Serial.print((int)sensorValues[i]);
-			Serial.print('\t');
-		}
-		Serial.println();
-		delay(100);
-	}
 }
 
 void loop()
@@ -142,7 +119,7 @@ void loop()
 	{
 	case kStartup:
 		Serial.println("Robot initialized. Waiting for bluetooth...");
-		// changeState(kWaitForBluetooth);
+		changeState(kWaitForBluetooth);
 		break;
 	case kWaitForBluetooth:
 		if (!digitalRead(kStartButtonInput) && _sendhb == 0)
@@ -191,6 +168,38 @@ void loop()
 		m_lineup.write(FourBar_value);
 		break;
 	}
+}
+
+void homeConveyor()
+{
+	if (!digitalRead(kConveyorLimit)) return;
+	while (digitalRead(kConveyorLimit))
+	{
+		m_conveyor.write(120);
+	}
+	m_trackEncoder.write(0);
+	m_conveyor.write(90);
+}
+
+/**
+ * @brief Drive the conveyor to a specified position.
+ * @details Drive the conveyor to a specfied position.
+ * This doesn't drive to a relative position.
+ * 
+ * @param position The position to drive to.
+ */
+void driveConveyor(int position)
+{
+	long pos = m_trackEncoder.read();
+	if (pos == position) return;
+	int speed = (pos < position)? 60 : 120;
+	while (abs(pos - position) > 1)
+	{
+		m_conveyor.write(speed);
+		pos = m_trackEncoder.read();
+	}
+	m_conveyor.write(180 - speed);
+	m_conveyor.write(90);
 }
 
 void autonomous()
@@ -285,6 +294,8 @@ void changeState(int newState)
 {
 	kPreviousRobotState = kCurrentRobotState;
 	kCurrentRobotState = newState;
+	Serial.print("State: ");
+	Serial.println(newState);
 }
 
 /**
