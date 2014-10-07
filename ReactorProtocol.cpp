@@ -109,11 +109,11 @@ int ReactorProtocol::createPkt(byte type, byte* data, byte pkt[10]) {
 bool ReactorProtocol::getData(byte* pkt, byte *data, byte &type) {
   byte size_pkt = pkt[1];	// extract the length byte
   // For Debug only
-   Serial.print("getData: Size: ");
-   Serial.println(size_pkt);
-   for (int i = 0; i < size_pkt + 1; i++) {
-  	Serial.println(pkt[i], HEX);
-   }
+   // Serial.print("getData: Size: ");
+   // Serial.println(size_pkt);
+   // for (int i = 0; i < size_pkt + 1; i++) {
+  	// Serial.println(pkt[i], HEX);
+   // }
 
   //first check the checksum
   byte cs = calcChecksum(pkt, size_pkt - 1);

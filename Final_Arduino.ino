@@ -43,6 +43,17 @@ TubeAvailability m_storageTubes;
 byte _heartbeatPacket[10];
 int  _heartbeatSize;
 byte _heartbeatData[3];
+byte _radAlertHighPacket[10];
+int _radAlertHighPacketSize;
+byte _radAlertHighPacketData[3];
+byte _radAlertLowPacket[10];
+int _radAlertLowPacketSize;
+byte _radAlertLowPacketData[3];
+
+BTPacket kPktRadiationAlertHigh;
+BTPacket kPktRadiationAlertLow;
+BTPacket kPktHeartbeat;
+
 int _sendhb = 0;
 
 int leftdrive = 90;
@@ -71,6 +82,19 @@ void setup()
 
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
+	_radAlertHighPacketData[0] = kRadiationCarryingNew;
+	_radAlertHighPacketSize = m_reactor.createPkt(kBTRadiationAlert, 
+		_radAlertHighPacketData, _radAlertHighPacket);
+	_radAlertLowPacketData[0] = kRadiationCarryingSpent;
+	_radAlertLowPacketSize = m_reactor.createPkt(kBTRadiationAlert, 
+		_radAlertLowPacketData, _radAlertLowPacket);
+
+	kPktHeartbeat.packetData = _heartbeatPacket;
+	kPktHeartbeat.packetSize = _heartbeatSize;
+	kPktRadiationAlertHigh.packetData = _radAlertHighPacket;
+	kPktRadiationAlertHigh.packetSize = _radAlertHighPacketSize;
+	kPktRadiationAlertLow.packetData = _radAlertLowPacket;
+	kPktRadiationAlertLow.packetSize = _radAlertLowPacketSize;
 
 	lcd.begin(16, 2);
 
@@ -84,7 +108,8 @@ void loop()
 	byte _incomingData[3];
 	if (m_btMaster.readPacket(_incomingPacket))
 	{
-		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType))
+		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
+			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
 		{
 			switch (_incomingType)
 			{
@@ -134,67 +159,67 @@ void loop()
 	case kTankDrive:
 		//Update LCD with tube supply and storage data.
 		char tubeAvailData[16];
-		snprintf(tubeAvailData, 16, "%d|%d||%d|%d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
+		snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
 			m_storageTubes.tubeThree, m_storageTubes.tubeFour);
 		char tubeSupplyData[16];
-		snprintf(tubeSupplyData, 16, "%d|%d||%d|%d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
+		snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
 			m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
 		lcd.setCursor(0,0);
-		lcd.print(tubeAvailData);
-		lcd.setCursor(0,1);
 		lcd.print(tubeSupplyData);
+		lcd.setCursor(0,1);
+		lcd.print(tubeAvailData);
 
-		leftdrive = ppm.getChannel(3);
-		rightdrive = ppm.getChannel(2);
+		// leftdrive = ppm.getChannel(3);
+		// rightdrive = ppm.getChannel(2);
 
-		if (abs(ppm.getChannel(5) - claw_value) > 150)
-		{
-			if (ppm.getChannel(5) < 90)
-			{
-				claw_value = 0;
-			}
-			else
-			{
-				claw_value = 180;
-			}
-		}
+		// if (abs(ppm.getChannel(5) - claw_value) > 150)
+		// {
+		// 	if (ppm.getChannel(5) < 90)
+		// 	{
+		// 		claw_value = 0;
+		// 	}
+		// 	else
+		// 	{
+		// 		claw_value = 180;
+		// 	}
+		// }
 
-		conveyor_value = ppm.getChannel(6);
+		// conveyor_value = ppm.getChannel(6);
 
-		if (abs(ppm.getChannel(4) - 90) > 30)
-		{
-			if (ppm.getChannel(4) < 90)
-			{
-				FourBar_value = 0;
-			}
-			else
-			{
-				FourBar_value = 80;
-			}
-		}
+		// if (abs(ppm.getChannel(4) - 90) > 30)
+		// {
+		// 	if (ppm.getChannel(4) < 90)
+		// 	{
+		// 		FourBar_value = 0;
+		// 	}
+		// 	else
+		// 	{
+		// 		FourBar_value = 80;
+		// 	}
+		// }
 
-		m_frontLeft.write(leftdrive);
-		m_rearLeft.write(leftdrive);
-		m_frontRight.write(180 - rightdrive);
-		m_rearRight.write(180 - rightdrive);
-		m_claw.write(claw_value);
-		if (abs(conveyor_value - 90) > 30)
-		{
-			if (conveyor_value < 90)
-			{
-				driveConveyor(kConveyorDown);
-			}
-			else
-			{
-				driveConveyor(kConveyorHome);
-			}
-		}
-		m_lineup.write(FourBar_value);
-		if (!digitalRead(kStartButtonInput))
-		{
-			stopDrive();
-			changeState(kAutonomous);
-		}
+		// m_frontLeft.write(leftdrive);
+		// m_rearLeft.write(leftdrive);
+		// m_frontRight.write(180 - rightdrive);
+		// m_rearRight.write(180 - rightdrive);
+		// m_claw.write(claw_value);
+		// if (abs(conveyor_value - 90) > 30)
+		// {
+		// 	if (conveyor_value < 90)
+		// 	{
+		// 		driveConveyor(kConveyorDown);
+		// 	}
+		// 	else
+		// 	{
+		// 		driveConveyor(kConveyorHome);
+		// 	}
+		// }
+		// m_lineup.write(FourBar_value);
+		// if (!digitalRead(kStartButtonInput))
+		// {
+		// 	stopDrive();
+		// 	changeState(kAutonomous);
+		// }
 		break;
 	case kAutonomous:		
 		lcd.clear();
@@ -226,6 +251,10 @@ void loop()
 		// Drive to stop
 		// Insert tube
 		// End
+		break;
+	case kPaused:
+		Serial.println("Robot paused.");
+		delay(100);
 		break;
 	case kDone:
 		break;
@@ -345,30 +374,7 @@ void periodicUpdate()
  */
 void sendHeartbeat()
 {
-	BTPacket tmp = {_heartbeatPacket, _heartbeatSize};
-	m_packetQueue.push(tmp);
-	sendMessage(0x00, 0x03, 0x2C);
-}
-
-/**
- * @brief Sends a bluetooth message.
- * @details Creates a bluetooth message packet and adds it
- * to the message queue. It will be sent out when appropriate
- * by the ISR.
- * 
- * @param destination The destination address.
- * @param type The message type.
- * @param data The message data.
- */
-void sendMessage(byte destination, byte type, byte data)
-{
-	m_reactor.setDst(destination);
-	byte tmpData[3];
-	tmpData[0] = data;
-	byte pkt[10];
-	int size = m_reactor.createPkt(type, tmpData, pkt);
-	BTPacket packet = {pkt, size};
-	m_packetQueue.push(packet);
+	m_packetQueue.push(kPktHeartbeat);
 }
 
 /**
