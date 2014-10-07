@@ -33,7 +33,19 @@ enum RobotStates
 	kWaitForBluetooth,
 	kTankDrive,
 	kPaused,
-	kAutonomous
+	kAutonomous,
+	kDone
+};
+
+enum AutonomousStates
+{
+	kAutoPickUpRod,
+	kAutoDriveToCenter,
+	kAutoDriveToStorage,
+	kAutoDriveToSupply,
+	kAutoDriveToReactor,
+	kAutoReplaceRod,
+	kAutoDone
 };
 
 enum Direction
@@ -153,7 +165,8 @@ enum OperationStatusMessages
 enum ConveyorPositions
 {
 	kConveyorHome = 0,
-	kConveyorDown = 275
+	kConveyorInsert = 90, //@TODO: Determine This Value.
+	kConveyorDown = 275,
 };
 
 ///A structure to hold a bluetooth packet.

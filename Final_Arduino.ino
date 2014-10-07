@@ -105,8 +105,6 @@ void loop()
 		}
 	}
 
-	//unsigned int position = readLinePosition();
-	//trackLine(position);
 	switch (kCurrentRobotState)
 	{
 	case kStartup:
@@ -118,6 +116,7 @@ void loop()
 		lcd.setCursor(0,0);
 		lcd.print("Homing conveyor.");
 		homeConveyor();
+		openGripper();
 		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.print("Wait for BT...");
@@ -129,9 +128,23 @@ void loop()
 			_sendhb = 1;
 			Serial.println("Sending heartbeat...");
 			changeState(kTankDrive);
+			lcd.clear();
+			lcd.setCursor(0,0);
 		}
 		break;
 	case kTankDrive:
+		//Update LCD with tube supply and storage data.
+		char tubeAvailData[16];
+		snprintf(tubeAvailData, 16, "%d|%d||%d|%d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
+			m_storageTubes.tubeThree, m_storageTubes.tubeFour);
+		char tubeSupplyData[16];
+		snprintf(tubeSupplyData, 16, "%d|%d||%d|%d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
+			m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
+		lcd.setCursor(0,0);
+		lcd.print(tubeAvailData);
+		lcd.setCursor(0,1);
+		lcd.print(tubeSupplyData);
+
 		leftdrive = ppm.getChannel(3);
 		rightdrive = ppm.getChannel(2);
 
@@ -178,6 +191,44 @@ void loop()
 			}
 		}
 		m_lineup.write(FourBar_value);
+		if (!digitalRead(kStartButtonInput))
+		{
+			stopDrive();
+			changeState(kAutonomous);
+		}
+		break;
+	case kAutonomous:		
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Running auto...");
+		changeState(kDone);
+		// Grab Tube
+			// Lower Conveyer
+			// Grab tube
+			// Raise Conveyer
+			//grabLowerTube();
+		// Turn around
+		// Drive to open tube
+			// Determine open tube
+			// Drive to line
+			// Turn right
+			// Drive to stop
+		// Insert tube
+		// Turn around
+		// Drive to middle
+		// Drive to filled reactor
+			// Determine filled reactor
+			// Turn (or not)
+			// Drive to stop
+		// Grab tube
+		// Turn around
+		// Return to middle
+		// Turn right
+		// Drive to stop
+		// Insert tube
+		// End
+		break;
+	case kDone:
 		break;
 	}
 }
@@ -214,71 +265,15 @@ void driveConveyor(int position)
 	m_conveyor.write(90);
 }
 
-void autonomous()
+void closeGripper()
 {
-	// Grab Tube
-		// Lower Conveyer
-
-		// Grab tube
-
-		// Raise Conveyer
-		//grabLowerTube();
-
-	// Turn around
-
-	// Drive to open tube
-		// Determine open tube
-
-		// Drive to line
-
-		// Turn right
-
-		// Drive to stop
-
-	// Insert tube
-
-	// Turn around
-
-	// Drive to middle
-
-	// Drive to filled reactor
-		// Determine filled reactor
-
-		// Turn (or not)
-
-		// Drive to stop
-
-	// Grab tube
-
-	// Turn around
-
-	// Return to middle
-
-	// Turn right
-
-	// Drive to stop
-
-	// Insert tube
-
-	// End
-
-
-}
-
-/*
-void grabLowerTube()
-{
-	setConveyerPosition(DOWN);
 	setGripper(true);
-	setConveyerPosition(HOME);
 }
 
-// Send the conveyer to some position
-void setConveyerPosition(DATA pos)
+void openGripper()
 {
-
+	setGripper(false);
 }
-*/
 
 // Sets the gripper
 // true -> closed
