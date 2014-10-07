@@ -375,6 +375,29 @@ void periodicUpdate()
 void sendHeartbeat()
 {
 	m_packetQueue.push(kPktHeartbeat);
+	sendStatusMessage(kMovementStopped, kGripperNoRod, kOperationIdle);
+}
+
+/**
+ * @brief Sends a robot movement status message.
+ * @details Sends a message to the FMS detailing the robot's
+ * current state.
+ * 
+ * @param mvt The movement status.
+ * @param grp The gripper status.
+ * @param opr The operation status.
+ */
+void sendStatusMessage(byte mvt, byte grp, byte opr)
+{
+	byte pkt[10];
+	int  sz;
+	byte data[3];
+	data[0] = mvt;
+	data[1] = grp;
+	data[2] = opr;
+	sz = m_reactor.createPkt(kBTRobotStatus, data, pkt);
+	BTPacket btTmp = {pkt, sz};
+	m_packetQueue.push(btTmp);
 }
 
 /**
