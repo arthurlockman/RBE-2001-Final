@@ -22,7 +22,6 @@ Servo m_lineup;
 Servo m_conveyor;
 LiquidCrystal lcd(40, 41, 39, 38, 37, 36);
 
-LSM303 m_compass;
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
 BumpSensor m_bumpSensor(kAccX, kAccY, kAccZ, 50);
 
