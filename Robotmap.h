@@ -24,7 +24,7 @@
 #define TEAM_NUMBER 2
 
 ///PID Values
-static const float kLineTrackingP = 0.01;
+static const float kLineTrackingP = 0.005;
 
 ///Operation States
 enum RobotStates

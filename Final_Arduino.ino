@@ -75,7 +75,9 @@ void setup()
 	m_rearRight.attach(kRearRightMotor);
 	m_rearLeft.attach(kRearLeftMotor);
 	m_claw.attach(kClawMotor);
-	//m_lineup.attach(kFourBarMotor);
+	m_lineup.attach(kFourBarMotor, 400, 2400);
+	setFourBar(false);
+
 	m_conveyor.attach(kConveyerMotor);
 	
 	Timer3.initialize(kTimerPeriod);
@@ -211,23 +213,95 @@ void loop()
 		// }
 		break;
 	case kAutonomous:		
-		lcd.clear();
-		char tubeAvailData[16];
-		snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
-			m_storageTubes.tubeThree, m_storageTubes.tubeFour);
-		char tubeSupplyData[16];
-		snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
-			m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
-		lcd.setCursor(0,0);
-		readLinePosition();
-		lcd.print(sensorAccum);
-		// lcd.print(tubeSupplyData);
-		lcd.setCursor(0,1);
-		lcd.print(tubeAvailData);
-		trackToLine();
-		delay(1000);
-		trackToLineReverse();
-		changeState(kDone);
+		if (m_autonomousStage == 0)
+		{
+			lcd.clear();
+			char tubeAvailData[16];
+			snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
+				m_storageTubes.tubeThree, m_storageTubes.tubeFour);
+			char tubeSupplyData[16];
+			snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
+				m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
+			lcd.setCursor(0,0);
+			readLinePosition();
+			lcd.print(tubeSupplyData);
+			lcd.setCursor(0,1);
+			lcd.print(tubeAvailData);
+		}
+		switch (m_autonomousStage)
+		{
+		case 0:
+			driveConveyor(kConveyorDown);
+			delay(100);
+			m_autonomousStage++;
+			break;
+		case 1:
+			closeGripper();
+			delay(200);
+			m_autonomousStage++;
+			break;
+		case 2:
+			driveConveyor(kConveyorInsert);
+			stopDrive();
+			delay(100);
+			m_autonomousStage++;
+			break;
+		case 3:
+			turnAround(kTurnRight, 2);
+			m_autonomousStage++;
+			break;
+		case 4:
+			trackToLine();
+			m_autonomousStage++;
+			break;
+		case 5:
+			turn(kTurnRight);
+			m_autonomousStage++;
+			break;
+		case 6:
+			trackToLine();
+			delay(500);
+			m_autonomousStage++;
+			break;
+		case 7:
+			setFourBar(true);
+			delay(500);
+			m_autonomousStage++;
+			break;
+		case 8:
+			{
+				int initTime = millis(); 
+				while(initTime - millis() < 500)
+				{
+					trackLine(readLinePosition());
+				}
+			}
+			// tankDrive(20,20);
+			// delay(600);
+			stopDrive();
+			delay(200);
+			m_autonomousStage++;
+			break;
+		case 9:
+			openGripper();
+			delay(200);
+			driveConveyor(kConveyorHome);
+			delay(200);
+			closeGripper();
+			delay(200);
+			driveConveyor(kConveyorInsert);
+			setFourBar(false);
+			delay(200);
+			m_autonomousStage++;
+			break;
+		case 10:
+			turnAround(kTurnLeft, 2);
+			m_autonomousStage++;
+			break;
+		default:
+			changeState(kDone);
+			break;
+		}
 		break;
 	case kPaused:
 		Serial.println("Robot paused.");
@@ -296,6 +370,19 @@ void setGripper(bool closed)
 	{
 		m_claw.write(0);
 	}
+}
+
+void setFourBar(bool out)
+{
+	if(out)
+	{
+		m_lineup.write(50);
+	}
+	else
+	{
+		m_lineup.write(0);
+	}
+
 }
 
 /**
@@ -473,8 +560,8 @@ void trackLine(unsigned int position)
 {
 	Serial.println(position);
 	int adjustedPosition = position - 3500;
-	int leftDrive = (20 - (adjustedPosition * kLineTrackingP));
-	int rightDrive = (20 + (adjustedPosition * kLineTrackingP));
+	int leftDrive = (15 - (adjustedPosition * kLineTrackingP));
+	int rightDrive = (15 + (adjustedPosition * kLineTrackingP));
 	tankDrive(leftDrive, rightDrive);
 }
 
@@ -482,8 +569,8 @@ void trackLineReverse(unsigned int position)
 {
 	Serial.println(position);
 	int adjustedPosition = position - 3500;
-	int leftDrive = (- 20 - (adjustedPosition * kLineTrackingP));
-	int rightDrive = (- 20 + (adjustedPosition * kLineTrackingP));
+	int leftDrive = (- 15 - (adjustedPosition * kLineTrackingP));
+	int rightDrive = (- 15 + (adjustedPosition * kLineTrackingP));
 	tankDrive(leftDrive, rightDrive);
 }
 
@@ -540,16 +627,16 @@ void turn(int dir)
 		while (sensorValues[2] < 500) 
 		{ 
 			readLinePosition();
-			tankDrive(30, -30); 
+			tankDrive(15, -15); 
 		}
 		stopDrive();
 		break;
 	case kTurnLeft:
 		while (millis() - intTime < 500) { trackLine(readLinePosition()); }
-		while (sensorValues[6] < 500) 
+		while (sensorValues[6] < 300) 
 		{ 
 			readLinePosition();
-			tankDrive(-30, 30); 
+			tankDrive(-15, 15); 
 		}
 		stopDrive();
 		break;
@@ -562,37 +649,37 @@ void turnAround(int dir, int expectedLines)
 	switch (dir)
 	{
 	case kTurnRight:
-		while(millis() - intTime < 300) { tankDrive(-30, -30); }
+		while(millis() - intTime < 400) { tankDrive(-20, -20); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{
 			while (sensorValues[2] < 500)
 			{ 
 				readLinePosition();
-				tankDrive(30, -30); 
+				tankDrive(15, -15); 
 			}
 			while (sensorValues[2] > 450)
 			{ 
 				readLinePosition();
-				tankDrive(30, -30); 
+				tankDrive(15, -15); 
 			}
 		}
 		stopDrive();
 		break;
 	case kTurnLeft:
-		while(millis() - intTime < 300) { tankDrive(-30, -30); }
+		while(millis() - intTime < 400) { tankDrive(-20, -20); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{
 			while (sensorValues[6] < 500)
 			{ 
 				readLinePosition();
-				tankDrive(-30, 30); 
+				tankDrive(-15, 15); 
 			}
 			while (sensorValues[6] > 450)
 			{ 
 				readLinePosition();
-				tankDrive(-30, 30); 
+				tankDrive(-15, 15); 
 			}
 		}
 		stopDrive();
