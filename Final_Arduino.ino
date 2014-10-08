@@ -11,6 +11,7 @@ QTRSensorsRC m_lineSensor((unsigned char[])
 },
 NUM_SENSORS, TIMEOUT, kLineSensorLED);
 unsigned int sensorValues[NUM_SENSORS];
+unsigned int sensorAccum = 0;
 
 //Motors
 Servo m_frontRight;
@@ -62,7 +63,7 @@ int claw_value = 0;
 int conveyor_value = 90;
 int FourBar_value = 0;
 
-PPM ppm(2);
+int m_autonomousStage = 0;
 
 void setup()
 {
@@ -151,24 +152,12 @@ void loop()
 		{
 			_sendhb = 1;
 			Serial.println("Sending heartbeat...");
-			changeState(kTankDrive);
+			changeState(kAutonomous);
 			lcd.clear();
 			lcd.setCursor(0,0);
 		}
 		break;
 	case kTankDrive:
-		//Update LCD with tube supply and storage data.
-		char tubeAvailData[16];
-		snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
-			m_storageTubes.tubeThree, m_storageTubes.tubeFour);
-		char tubeSupplyData[16];
-		snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
-			m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
-		lcd.setCursor(0,0);
-		lcd.print(tubeSupplyData);
-		lcd.setCursor(0,1);
-		lcd.print(tubeAvailData);
-
 		// leftdrive = ppm.getChannel(3);
 		// rightdrive = ppm.getChannel(2);
 
@@ -223,40 +212,31 @@ void loop()
 		break;
 	case kAutonomous:		
 		lcd.clear();
+		char tubeAvailData[16];
+		snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
+			m_storageTubes.tubeThree, m_storageTubes.tubeFour);
+		char tubeSupplyData[16];
+		snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
+			m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
 		lcd.setCursor(0,0);
-		lcd.print("Running auto...");
+		readLinePosition();
+		lcd.print(sensorAccum);
+		// lcd.print(tubeSupplyData);
+		lcd.setCursor(0,1);
+		lcd.print(tubeAvailData);
+		trackToLine();
+		delay(1000);
+		trackToLineReverse();
 		changeState(kDone);
-		// Grab Tube
-			// Lower Conveyer
-			// Grab tube
-			// Raise Conveyer
-			//grabLowerTube();
-		// Turn around
-		// Drive to open tube
-			// Determine open tube
-			// Drive to line
-			// Turn right
-			// Drive to stop
-		// Insert tube
-		// Turn around
-		// Drive to middle
-		// Drive to filled reactor
-			// Determine filled reactor
-			// Turn (or not)
-			// Drive to stop
-		// Grab tube
-		// Turn around
-		// Return to middle
-		// Turn right
-		// Drive to stop
-		// Insert tube
-		// End
 		break;
 	case kPaused:
 		Serial.println("Robot paused.");
 		delay(100);
 		break;
 	case kDone:
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Done!");
 		break;
 	}
 }
@@ -447,49 +427,46 @@ void calibrateLineSensor()
 unsigned int readLinePosition()
 {
 	unsigned int position = m_lineSensor.readLine(sensorValues);
+	sensorAccum = 0;
+	for (int i = 0; i < NUM_SENSORS; i++)
+	{
+		sensorAccum += sensorValues[i];
+	}
 	return position;
 }
 
 void trackToLine()
 {
-	int foundLine = 0;
-	while (!foundLine)
-	{
-		unsigned int position = readLinePosition();
-		trackLine(position);
-		int accum = 0;
-		for (int i = 0; i < NUM_SENSORS; i++)
-		{
-			accum += sensorValues[i];
-		}
-		if (accum > 5000)
-		{
-			Serial.print("On a line. Stopping.\t");
-			foundLine = 1;
-			stopDrive();
-		}
+	unsigned int pos = readLinePosition();
+	int strtTime = millis();
+	while (millis() - strtTime < 300)
+	{ 
+		pos = readLinePosition();
+		trackLine(pos);
 	}
+	while (sensorAccum < 6000)
+	{
+		pos = readLinePosition();
+		trackLine(pos);
+	}
+	stopDrive();
 }
 
 void trackToLineReverse()
 {
-	int foundLine = 0;
-	while (!foundLine)
-	{
-		unsigned int position = readLinePosition();
-		trackLineReverse(position);
-		int accum = 0;
-		for (int i = 0; i < NUM_SENSORS; i++)
-		{
-			accum += sensorValues[i];
-		}
-		if (accum > 5000)
-		{
-			Serial.print("On a line. Stopping.\t");
-			foundLine = 1;
-			stopDrive();
-		}
+	unsigned int pos = readLinePosition();
+	int strtTime = millis();
+	while (millis() - strtTime < 300)
+	{ 
+		pos = readLinePosition();
+		trackLineReverse(pos);
 	}
+	while (sensorAccum < 6000)
+	{
+		pos = readLinePosition();
+		trackLineReverse(pos);
+	}
+	stopDrive();
 }
 
 void trackLine(unsigned int position)
@@ -501,7 +478,6 @@ void trackLine(unsigned int position)
 	tankDrive(leftDrive, rightDrive);
 }
 
-//@TODO: Test this.
 void trackLineReverse(unsigned int position)
 {
 	Serial.println(position);
@@ -560,9 +536,6 @@ void turn(int dir)
 	switch (dir)
 	{
 	case kTurnRight:
-		lcd.clear();
-		lcd.setCursor(0,0);
-		lcd.print("Turning right...");
 		while (millis() - intTime < 500) { trackLine(readLinePosition()); }
 		while (sensorValues[2] < 500) 
 		{ 
@@ -572,9 +545,6 @@ void turn(int dir)
 		stopDrive();
 		break;
 	case kTurnLeft:
-		lcd.clear();
-		lcd.setCursor(0,0);
-		lcd.print("Turning left...");
 		while (millis() - intTime < 500) { trackLine(readLinePosition()); }
 		while (sensorValues[6] < 500) 
 		{ 
@@ -592,7 +562,7 @@ void turnAround(int dir, int expectedLines)
 	switch (dir)
 	{
 	case kTurnRight:
-		while(millis() - intTime < 250) { tankDrive(-30, -30); }
+		while(millis() - intTime < 300) { tankDrive(-30, -30); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{
@@ -610,7 +580,7 @@ void turnAround(int dir, int expectedLines)
 		stopDrive();
 		break;
 	case kTurnLeft:
-		while(millis() - intTime < 250) { tankDrive(-30, -30); }
+		while(millis() - intTime < 300) { tankDrive(-30, -30); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{

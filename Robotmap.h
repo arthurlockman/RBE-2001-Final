@@ -165,7 +165,7 @@ enum OperationStatusMessages
 enum ConveyorPositions
 {
 	kConveyorHome = 0,
-	kConveyorInsert = 90, //@TODO: Determine This Value.
+	kConveyorInsert = 30, //@TODO: Determine This Value.
 	kConveyorDown = 275,
 };
 
