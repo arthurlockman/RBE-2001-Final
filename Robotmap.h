@@ -1,20 +1,15 @@
 #ifndef ROBOTMAP_H
 #define ROBOTMAP_H
 
-#include "UltrasonicRangefinder.h"
-#include "PPM.h"
 #include "Arduino.h"
 #include "Servo.h"
-#include "LimitSwitch.h"
 #include "LSM303.h"
 #include "QTRSensors.h"
 #include "LiquidCrystal.h"
 #include "ReactorProtocol.h"
-#include "BluetoothClient.h"
 #include "BluetoothMaster.h"
 #include "TimerThree.h"
 #include "Encoder.h"
-#include "Alarm.h"
 #include "Wire.h"
 #include "QTRSensors.h"
 #include "QueueList.h"

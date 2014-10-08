@@ -64,6 +64,7 @@ int conveyor_value = 90;
 int FourBar_value = 0;
 
 int m_autonomousStage = 0;
+int m_autonomousTime = 0;
 
 void setup()
 {
@@ -223,7 +224,6 @@ void loop()
 			snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
 				m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
 			lcd.setCursor(0,0);
-			readLinePosition();
 			lcd.print(tubeSupplyData);
 			lcd.setCursor(0,1);
 			lcd.print(tubeAvailData);
@@ -232,6 +232,7 @@ void loop()
 		{
 		case 0:
 			driveConveyor(kConveyorDown);
+			tankDrive(10,10);
 			delay(100);
 			m_autonomousStage++;
 			break;
@@ -269,17 +270,8 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 8:
-			{
-				int initTime = millis(); 
-				while(initTime - millis() < 500)
-				{
-					trackLine(readLinePosition());
-				}
-			}
-			// tankDrive(20,20);
-			// delay(600);
+			trackLineT(500);
 			stopDrive();
-			delay(200);
 			m_autonomousStage++;
 			break;
 		case 9:
@@ -423,6 +415,7 @@ void revertState()
 void periodicUpdate()
 {
 	//Do things here with interruptcount.
+	noInterrupts();
 	interruptCount++;
 	if (_sendhb && (interruptCount % kHeartbeatPeriod) == 0)
 	{
@@ -433,6 +426,7 @@ void periodicUpdate()
 		BTPacket p = m_packetQueue.pop();
 		m_btMaster.sendPkt(p.packetData, p.packetSize);
 	}
+	interrupts();
 }
 
 /**
@@ -442,7 +436,6 @@ void periodicUpdate()
 void sendHeartbeat()
 {
 	m_packetQueue.push(kPktHeartbeat);
-	sendStatusMessage(kMovementStopped, kGripperNoRod, kOperationIdle);
 }
 
 /**
@@ -558,16 +551,23 @@ void trackToLineReverse()
 
 void trackLine(unsigned int position)
 {
-	Serial.println(position);
 	int adjustedPosition = position - 3500;
 	int leftDrive = (15 - (adjustedPosition * kLineTrackingP));
 	int rightDrive = (15 + (adjustedPosition * kLineTrackingP));
 	tankDrive(leftDrive, rightDrive);
 }
 
+void trackLineT(int time)
+{
+	int sTime = millis();
+	while (millis() - sTime < 500)
+	{
+		trackLine(readLinePosition());
+	}
+}
+
 void trackLineReverse(unsigned int position)
 {
-	Serial.println(position);
 	int adjustedPosition = position - 3500;
 	int leftDrive = (- 15 - (adjustedPosition * kLineTrackingP));
 	int rightDrive = (- 15 + (adjustedPosition * kLineTrackingP));
