@@ -388,7 +388,7 @@ void loop()
 			}
 			break;
 		case 17:
-			if (millis() - m_autonomousTime < 1000)
+			if (millis() - m_autonomousTime < 1500)
 			{
 				trackLine(readLinePosition());
 			} else { 
@@ -510,8 +510,20 @@ void loop()
 		case 32:
 			trackToLine();
 			m_autonomousStage++;
-			m_autonomousLinesPassed = 0;
 			break;
+		case 33:
+			if (m_autonomousLinesPassed == 1)
+			{
+				if (m_storageTubes.tubeOne)
+				{
+					m_autonomousStage++;
+					break;
+				} else {
+					turn(kTurnLeft);
+					m_autonomousStage++;
+				}
+			} else if (m_autonomousLinesPassed == 2) {
+			}
 		default:
 			changeState(kDone);
 			lcd.clear();
@@ -800,7 +812,7 @@ void trackToLine()
 		pos = readLinePosition();
 		trackLine(pos);
 	}
-	while (sensorAccum < 6000)
+	while (sensorAccum < 4000)
 	{
 		pos = readLinePosition();
 		trackLine(pos);
@@ -840,7 +852,7 @@ void trackToLineReverse()
  */
 void trackLine(unsigned int position)
 {
-	int adjustedPosition = position - 3500;
+	int adjustedPosition = position - 3500 + 250;
 	int leftDrive = (15 - (adjustedPosition * kLineTrackingP));
 	int rightDrive = (15 + (adjustedPosition * kLineTrackingP));
 	tankDrive(leftDrive, rightDrive);
@@ -855,7 +867,7 @@ void trackLine(unsigned int position)
  */
 void trackLineReverse(unsigned int position)
 {
-	int adjustedPosition = position - 3500;
+	int adjustedPosition = position - 3500 + 250;
 	int leftDrive = (- 15 - (adjustedPosition * kLineTrackingP));
 	int rightDrive = (- 15 + (adjustedPosition * kLineTrackingP));
 	tankDrive(leftDrive, rightDrive);
@@ -939,7 +951,7 @@ void turn(int dir)
 		while (sensorValues[6] < 300) 
 		{ 
 			readLinePosition();
-			tankDrive(-15, 15); 
+			tankDrive(-20, 20); 
 		}
 		stopDrive();
 		break;
@@ -987,12 +999,12 @@ void turnAround(int dir, int expectedLines)
 			while (sensorValues[6] < 500)
 			{ 
 				readLinePosition();
-				tankDrive(-15, 15); 
+				tankDrive(-20, 20); 
 			}
 			while (sensorValues[6] > 450)
 			{ 
 				readLinePosition();
-				tankDrive(-15, 15); 
+				tankDrive(-20, 20); 
 			}
 		}
 		stopDrive();
