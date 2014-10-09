@@ -123,6 +123,7 @@ void loop()
 	byte _incomingData[3];
 	if (m_btMaster.readPacket(_incomingPacket))
 	{
+		_sendhb = 1;
 		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
 			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
 		{
@@ -158,14 +159,13 @@ void loop()
 		openGripper();
 		lcd.clear();
 		lcd.setCursor(0,0);
-		lcd.print("Wait for BT...");
+		lcd.print("Wait for start..");
 		changeState(kWaitForBluetooth);
 		break;
 	case kWaitForBluetooth:
-		if (!digitalRead(kStartButtonInput) && _sendhb == 0)
+		if (!digitalRead(kStartButtonInput))
 		{
-			_sendhb = 1;
-			Serial.println("Sending heartbeat...");
+			Serial.println("Starting auto...");
 			changeState(kAutonomous);
 			lcd.clear();
 			lcd.setCursor(0,0);
@@ -319,6 +319,7 @@ void loop()
 			m_autonomousStage++;
 		default:
 			changeState(kDone);
+			lcd.clear();
 			break;
 		}
 		break;
@@ -327,7 +328,6 @@ void loop()
 		delay(100);
 		break;
 	case kDone:
-		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.print("Done!");
 		break;
