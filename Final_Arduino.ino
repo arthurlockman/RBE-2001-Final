@@ -252,29 +252,29 @@ void loop()
 		}
 		switch (m_autonomousStage)
 		{
-		case 0:
+		case 0: //Drive conveyor down
 			driveConveyor(kConveyorDown);
 			tankDrive(10,10);
 			delay(100);
 			m_autonomousStage++;
 			break;
-		case 1:
+		case 1: //Grab first tube
 			closeGripper();
 			delay(200);
 			m_autonomousStage++;
 			break;
-		case 2:
+		case 2: //Drive conveyor up
 			driveConveyor(kConveyorInsert);
 			stopDrive();
 			delay(100);
 			m_autonomousStage++;
 			break;
-		case 3:
+		case 3: //Turn around to begin run
 			turnAround(kTurnRight, 2);
 			m_autonomousLinesPassed = 0;
 			m_autonomousStage++;
 			break;
-		case 4:
+		case 4://Drive to first storage tube
 			if (!m_storageTubes.tubeFour)
 			{
 				trackToLine();
@@ -293,16 +293,16 @@ void loop()
 				if (m_autonomousLinesPassed == 4) { m_autonomousStage++; }
 			}
 			break;
-		case 5:
+		case 5: //Turn to enter first storage tube
 			turn(kTurnRight);
 			m_autonomousStage++;
 			break;
-		case 6:
+		case 6: //Extend fourbar to line up with first storage tube
 			setFourBar(true);
 			delay(500);
 			m_autonomousStage++;
 			break;
-		case 7:
+		case 7: //Track line to stop before first storage
 			trackLine(readLinePosition());
 			if (sensorAccum > 5000) 
 			{ 
@@ -310,21 +310,21 @@ void loop()
 				m_autonomousTime = millis();
 			}
 			break;
-		case 8:
+		case 8: //Drive up to first storage.
 			trackLine(readLinePosition());
 			if (millis() - m_autonomousTime > 1000) 
 			{ 
-				tankDrive(15, 15);
+				trackLine(readLinePosition());
 				m_autonomousStage++; 
 			}
 			break;
-		case 9:
+		case 9: //Release tube into first storage.
 			openGripper();
 			delay(200);
 			driveConveyor(kConveyorHome);
 			m_autonomousStage++;
 			break;
-		case 10:
+		case 10: //Check if tube is inserted, if it isn't give it a tap.
 			delay(1000);
 			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeFour) {
 				m_autonomousStage++;
@@ -346,36 +346,36 @@ void loop()
 				m_autonomousStage++;
 			}
 			break;
-		case 11:
+		case 11: //Retract fourbar and gripper to move to second reactor for pickup
 			openGripper();
 			driveConveyor(kConveyorHome);
 			stopDrive();
 			setFourBar(false);
 			m_autonomousStage++;
 			break;
-		case 12:
+		case 12: //Back away from first storage tube
 			trackToLineReverse();
 			m_autonomousStage++;
 			break;
-		case 13:
+		case 13: //Turn around to face center
 			if (m_autonomousLinesPassed == 2 || m_autonomousLinesPassed == 4)
 				turnAround(kTurnLeft, 2);
 			else 
 				turnAround(kTurnRight, 2);
 			m_autonomousStage++;
 			break;
-		case 14:
+		case 14: //Track to center
 			trackToLine();
 			m_autonomousStage++;
 			m_autonomousLinesPassed = 0;
 			break;
-		case 15:
+		case 15: //Turn right to head to second reactor
 			turn(kTurnRight);
 			m_autonomousLinesToPass = 4 - m_autonomousLinesPassed;
 			m_autonomousLinesPassed = 0;
 			m_autonomousStage++;
 			break;
-		case 16:
+		case 16: //Track line to second reactor stop line
 			if (m_autonomousLinesPassed != m_autonomousLinesToPass)
 			{
 				trackToLine();
@@ -387,7 +387,7 @@ void loop()
 				m_autonomousTime = millis();
 			}
 			break;
-		case 17:
+		case 17: //Drive forward to engage second reactor.
 			if (millis() - m_autonomousTime < 1500)
 			{
 				trackLine(readLinePosition());
@@ -396,29 +396,29 @@ void loop()
 				m_autonomousStage++;
 			}
 			break;
-		case 18:
+		case 18: //Drive conveyor down to pickup from reactor 2.
 			driveConveyor(kConveyorDown);
 			tankDrive(10,10);
 			delay(100);
 			m_autonomousStage++;
 			break;
-		case 19:
+		case 19: //Grab second reactor spent rod.
 			closeGripper();
 			delay(200);
 			m_autonomousStage++;
 			break;
-		case 20:
+		case 20: //Lift second reactor spent rod.
 			driveConveyor(kConveyorInsert);
 			stopDrive();
 			delay(100);
 			m_autonomousStage++;
 			break;
-		case 21:
+		case 21: //Turn around to put second rod in storage.
 			turnAround(kTurnRight, 2);
 			m_autonomousLinesPassed = 0;
 			m_autonomousStage++;
 			break;
-		case 22:
+		case 22: //Determine which storage tube to use for second rod.
 			if (!m_storageTubes.tubeOne)
 			{
 				trackToLine();
@@ -437,15 +437,15 @@ void loop()
 				if (m_autonomousLinesPassed == 4) { m_autonomousStage++; }
 			}
 			break;
-		case 23:
+		case 23: //Turn to face second storage tube.
 			turn(kTurnLeft);
 			m_autonomousStage++;
-		case 24:
+		case 24: //Extend fourbar to line up with second tube.
 			setFourBar(true);
 			delay(500);
 			m_autonomousStage++;
 			break;
-		case 25:
+		case 25: //Track line to second storage tube.
 			trackLine(readLinePosition());
 			if (sensorAccum > 5000) 
 			{ 
@@ -453,21 +453,21 @@ void loop()
 				m_autonomousTime = millis();
 			}
 			break;
-		case 26:
+		case 26: //Engage with second storage tube.
 			trackLine(readLinePosition());
 			if (millis() - m_autonomousTime > 1000) 
 			{ 
-				tankDrive(15, 15);
+				trackLine(readLinePosition());
 				m_autonomousStage++; 
 			}
 			break;
-		case 27:
+		case 27: //Release second rod.
 			openGripper();
 			delay(200);
 			driveConveyor(kConveyorHome);
 			m_autonomousStage++;
 			break;
-		case 28:
+		case 28: //If second rod not inserted, give it a tap.
 			delay(1000);
 			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeOne) {
 				m_autonomousStage++;
@@ -489,29 +489,29 @@ void loop()
 				m_autonomousStage++;
 			}
 			break;
-		case 29:
+		case 29: //Retract fourbar to head for new rods.
 			openGripper();
 			driveConveyor(kConveyorHome);
 			stopDrive();
 			setFourBar(false);
 			m_autonomousStage++;
 			break;
-		case 30:
+		case 30: //Back away from second storage tube.
 			trackToLineReverse();
 			m_autonomousStage++;
 			break;
-		case 31:
+		case 31: //Turn to face center.
 			if (m_autonomousLinesPassed == 2 || m_autonomousLinesPassed == 4)
 				turnAround(kTurnRight, 2);
 			else 
 				turnAround(kTurnLeft, 2);
 			m_autonomousStage++;
 			break;
-		case 32:
+		case 32: //Track to center to head for reactor.
 			trackToLine();
 			m_autonomousStage++;
 			break;
-		case 33:
+		case 33: //Determine which storage tube to go for first.
 			if (m_autonomousLinesPassed == 1)
 			{
 				if (m_storageTubes.tubeOne)
@@ -524,7 +524,7 @@ void loop()
 				}
 			} else if (m_autonomousLinesPassed == 2) {
 			}
-		default:
+		default: //Complete!
 			changeState(kDone);
 			lcd.clear();
 			break;
