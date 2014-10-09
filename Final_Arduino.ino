@@ -64,6 +64,8 @@ int FourBar_value = 0;
 
 int m_autonomousStage = 0;
 unsigned long m_autonomousTime = 0;
+int m_autonomousLinesPassed = 0;
+int m_autonomousLinesToPass = 0;
 
 /**
  * @brief This method initializes all objects in
@@ -98,6 +100,15 @@ void setup()
 	_radAlertLowPacketData[0] = kRadiationCarryingSpent;
 	_radAlertLowPacketSize = m_reactor.createPkt(kBTRadiationAlert, 
 		_radAlertLowPacketData, _radAlertLowPacket);
+
+	m_storageTubes.tubeOne = 0;
+	m_storageTubes.tubeTwo = 0;
+	m_storageTubes.tubeThree = 0;
+	m_storageTubes.tubeFour = 0;
+	m_supplyTubes.tubeOne = 1;
+	m_supplyTubes.tubeTwo = 1;
+	m_supplyTubes.tubeThree = 1;
+	m_supplyTubes.tubeFour = 1;
 
 	kPktHeartbeat.packetData = _heartbeatPacket;
 	kPktHeartbeat.packetSize = _heartbeatSize;
@@ -260,11 +271,27 @@ void loop()
 			break;
 		case 3:
 			turnAround(kTurnRight, 2);
+			m_autonomousLinesPassed = 0;
 			m_autonomousStage++;
 			break;
 		case 4:
-			trackToLine();
-			m_autonomousStage++;
+			if (!m_storageTubes.tubeFour)
+			{
+				trackToLine();
+				m_autonomousStage++;
+			} else if (!m_storageTubes.tubeThree) {
+				trackToLine();
+				m_autonomousLinesPassed++;
+				if (m_autonomousLinesPassed == 2) { m_autonomousStage++; }
+			} else if (!m_storageTubes.tubeTwo) {
+				trackToLine();
+				m_autonomousLinesPassed++;
+				if (m_autonomousLinesPassed == 3) { m_autonomousStage++; }
+			} else {
+				trackToLine();
+				m_autonomousLinesPassed++;
+				if (m_autonomousLinesPassed == 4) { m_autonomousStage++; }
+			}
 			break;
 		case 5:
 			turn(kTurnRight);
@@ -295,28 +322,196 @@ void loop()
 			openGripper();
 			delay(200);
 			driveConveyor(kConveyorHome);
-			delay(200);
-			closeGripper();
-			delay(200);
-			driveConveyor(kConveyorInsert);
+			m_autonomousStage++;
+			break;
+		case 10:
+			delay(1000);
+			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeFour) {
+				m_autonomousStage++;
+				break;
+			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeThree) {
+				m_autonomousStage++;
+				break;
+			} else if (m_autonomousLinesPassed == 3 && m_storageTubes.tubeTwo) {
+				m_autonomousStage++;
+				break;
+			} else if (m_autonomousLinesPassed == 4 && m_storageTubes.tubeOne) {
+				m_autonomousStage++;
+				break;
+			} else {
+				closeGripper();
+				delay(200);
+				driveConveyor(kConveyorInsert);
+				delay(1000);
+				m_autonomousStage++;
+			}
+			break;
+		case 11:
 			openGripper();
 			driveConveyor(kConveyorHome);
-			delay(1000);
 			stopDrive();
 			setFourBar(false);
 			m_autonomousStage++;
 			break;
-		case 10:
+		case 12:
 			trackToLineReverse();
 			m_autonomousStage++;
 			break;
-		case 11:
-			turnAround(kTurnRight, 2);
+		case 13:
+			if (m_autonomousLinesPassed == 2 || m_autonomousLinesPassed == 4)
+				turnAround(kTurnLeft, 2);
+			else 
+				turnAround(kTurnRight, 2);
 			m_autonomousStage++;
 			break;
-		case 12:
+		case 14:
 			trackToLine();
 			m_autonomousStage++;
+			m_autonomousLinesPassed = 0;
+			break;
+		case 15:
+			turn(kTurnRight);
+			m_autonomousLinesToPass = 4 - m_autonomousLinesPassed;
+			m_autonomousLinesPassed = 0;
+			m_autonomousStage++;
+			break;
+		case 16:
+			if (m_autonomousLinesPassed != m_autonomousLinesToPass)
+			{
+				trackToLine();
+				m_autonomousLinesPassed++;
+			} else {
+				m_autonomousStage++;
+				m_autonomousLinesPassed = 0;
+				m_autonomousLinesToPass = 0;
+				m_autonomousTime = millis();
+			}
+			break;
+		case 17:
+			if (millis() - m_autonomousTime < 1000)
+			{
+				trackLine(readLinePosition());
+			} else { 
+				tankDrive(10, 10);
+				m_autonomousStage++;
+			}
+			break;
+		case 18:
+			driveConveyor(kConveyorDown);
+			tankDrive(10,10);
+			delay(100);
+			m_autonomousStage++;
+			break;
+		case 19:
+			closeGripper();
+			delay(200);
+			m_autonomousStage++;
+			break;
+		case 20:
+			driveConveyor(kConveyorInsert);
+			stopDrive();
+			delay(100);
+			m_autonomousStage++;
+			break;
+		case 21:
+			turnAround(kTurnRight, 2);
+			m_autonomousLinesPassed = 0;
+			m_autonomousStage++;
+			break;
+		case 22:
+			if (!m_storageTubes.tubeOne)
+			{
+				trackToLine();
+				m_autonomousStage++;
+			} else if (!m_storageTubes.tubeTwo) {
+				trackToLine();
+				m_autonomousLinesPassed++;
+				if (m_autonomousLinesPassed == 2) { m_autonomousStage++; }
+			} else if (!m_storageTubes.tubeThree) {
+				trackToLine();
+				m_autonomousLinesPassed++;
+				if (m_autonomousLinesPassed == 3) { m_autonomousStage++; }
+			} else {
+				trackToLine();
+				m_autonomousLinesPassed++;
+				if (m_autonomousLinesPassed == 4) { m_autonomousStage++; }
+			}
+			break;
+		case 23:
+			turn(kTurnLeft);
+			m_autonomousStage++;
+		case 24:
+			setFourBar(true);
+			delay(500);
+			m_autonomousStage++;
+			break;
+		case 25:
+			trackLine(readLinePosition());
+			if (sensorAccum > 5000) 
+			{ 
+				m_autonomousStage++; 
+				m_autonomousTime = millis();
+			}
+			break;
+		case 26:
+			trackLine(readLinePosition());
+			if (millis() - m_autonomousTime > 1000) 
+			{ 
+				tankDrive(15, 15);
+				m_autonomousStage++; 
+			}
+			break;
+		case 27:
+			openGripper();
+			delay(200);
+			driveConveyor(kConveyorHome);
+			m_autonomousStage++;
+			break;
+		case 28:
+			delay(1000);
+			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeOne) {
+				m_autonomousStage++;
+				break;
+			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeTwo) {
+				m_autonomousStage++;
+				break;
+			} else if (m_autonomousLinesPassed == 3 && m_storageTubes.tubeThree) {
+				m_autonomousStage++;
+				break;
+			} else if (m_autonomousLinesPassed == 4 && m_storageTubes.tubeFour) {
+				m_autonomousStage++;
+				break;
+			} else {
+				closeGripper();
+				delay(200);
+				driveConveyor(kConveyorInsert);
+				delay(1000);
+				m_autonomousStage++;
+			}
+			break;
+		case 29:
+			openGripper();
+			driveConveyor(kConveyorHome);
+			stopDrive();
+			setFourBar(false);
+			m_autonomousStage++;
+			break;
+		case 30:
+			trackToLineReverse();
+			m_autonomousStage++;
+			break;
+		case 31:
+			if (m_autonomousLinesPassed == 2 || m_autonomousLinesPassed == 4)
+				turnAround(kTurnRight, 2);
+			else 
+				turnAround(kTurnLeft, 2);
+			m_autonomousStage++;
+			break;
+		case 32:
+			trackToLine();
+			m_autonomousStage++;
+			m_autonomousLinesPassed = 0;
+			break;
 		default:
 			changeState(kDone);
 			lcd.clear();
