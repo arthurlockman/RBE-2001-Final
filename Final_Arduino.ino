@@ -534,7 +534,7 @@ unsigned int readLinePosition()
 void trackToLine()
 {
 	unsigned int pos = readLinePosition();
-	int strtTime = millis();
+	unsigned long strtTime = millis();
 	while (millis() - strtTime < 300)
 	{ 
 		pos = readLinePosition();
@@ -551,7 +551,7 @@ void trackToLine()
 void trackToLineReverse()
 {
 	unsigned int pos = readLinePosition();
-	int strtTime = millis();
+	unsigned long strtTime = millis();
 	while (millis() - strtTime < 300)
 	{ 
 		pos = readLinePosition();
@@ -571,15 +571,6 @@ void trackLine(unsigned int position)
 	int leftDrive = (15 - (adjustedPosition * kLineTrackingP));
 	int rightDrive = (15 + (adjustedPosition * kLineTrackingP));
 	tankDrive(leftDrive, rightDrive);
-}
-
-void trackLineT(int time)
-{
-	int sTime = millis();
-	while (millis() - sTime < 500)
-	{
-		trackLine(readLinePosition());
-	}
 }
 
 void trackLineReverse(unsigned int position)
@@ -635,7 +626,7 @@ void stopAll()
  */
 void turn(int dir)
 {
-	int intTime = millis();
+	unsigned long intTime = millis();
 	switch (dir)
 	{
 	case kTurnRight:
@@ -661,7 +652,7 @@ void turn(int dir)
 
 void turnAround(int dir, int expectedLines)
 {
-	int intTime = millis();
+	unsigned long intTime = millis();
 	switch (dir)
 	{
 	case kTurnRight:
