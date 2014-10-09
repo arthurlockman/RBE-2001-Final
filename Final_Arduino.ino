@@ -13,7 +13,6 @@ NUM_SENSORS, TIMEOUT, kLineSensorLED);
 unsigned int sensorValues[NUM_SENSORS];
 unsigned int sensorAccum = 0;
 
-//Motors
 Servo m_frontRight;
 Servo m_frontLeft;
 Servo m_rearRight;
@@ -66,6 +65,13 @@ int FourBar_value = 0;
 int m_autonomousStage = 0;
 unsigned long m_autonomousTime = 0;
 
+/**
+ * @brief This method initializes all objects in
+ * the program.
+ * @details This method is the Arduino setup method.
+ * It initializes everything that needs initializing. This 
+ * method is only run once, at program startup.
+ */
 void setup()
 {
 	Serial.begin(115200);
@@ -105,6 +111,11 @@ void setup()
 	pinMode(kStartButtonInput, INPUT_PULLUP);
 }
 
+/**
+ * @brief The main loop.
+ * @details This function is the main arduino loop. It
+ * is called every time it finishes and loops around.
+ */
 void loop()
 {
 	byte _incomingPacket[10];
@@ -323,6 +334,12 @@ void loop()
 	}
 }
 
+/**
+ * @brief Home the conveyor.
+ * @details This is a blocking method
+ * that drives the conveyor to its home
+ * position and zeros it there.
+ */
 void homeConveyor()
 {
 	if (!digitalRead(kConveyorLimit)) return;
@@ -355,19 +372,37 @@ void driveConveyor(int position)
 	m_conveyor.write(90);
 }
 
+/**
+ * @brief Close the gripper.
+ * @details This closes the gripper
+ * by calling the setGripper(true) 
+ * method.
+ */
 void closeGripper()
 {
 	setGripper(true);
 }
 
+/**
+ * @brief Open the gripper.
+ * @details This opens the gripper
+ * by calling the setGripper(false) 
+ * method.
+ */
 void openGripper()
 {
 	setGripper(false);
 }
 
-// Sets the gripper
-// true -> closed
-// false -> open
+/**
+ * @brief Sets the gripper state.
+ * @details This method sets the gripper 
+ * state. True sets it to closed, and false
+ * sets it to open.
+ * 
+ * @param closed Whether or not the gripper
+ * should be closed.
+ */
 void setGripper(bool closed)
 {
 	if(closed)
@@ -380,6 +415,15 @@ void setGripper(bool closed)
 	}
 }
 
+/**
+ * @brief Sets the fourbar state.
+ * @details Sets the fourbar state. True
+ * extends the fourbar, and false
+ * retracts it.
+ * 
+ * @param out Whether or not the fourbar
+ * mechanism should be extended.
+ */
 void setFourBar(bool out)
 {
 	if(out)
@@ -493,6 +537,12 @@ void updateAvailablity(byte data, TubeAvailability* storage)
 	storage->tubeFour = bitRead(data, 3);
 }
 
+/**
+ * @brief Calibrate the QTRRC line sensor.
+ * @details This method calibrates the line sensor.
+ * It was taken directly with some modification from
+ * the Pololu library. This method is blocking.
+ */
 void calibrateLineSensor()
 {
 	delay(500);
@@ -520,6 +570,15 @@ void calibrateLineSensor()
 	delay(1000);
 }
 
+/**
+ * @brief Read the line position.
+ * @details This method uses the line sensor
+ * to take a reading of the position of the line.
+ * It also updates the global line sensor accumulated
+ * value.
+ * 
+ * @return The line position (from 0-7000).
+ */
 unsigned int readLinePosition()
 {
 	unsigned int position = m_lineSensor.readLine(sensorValues);
@@ -531,6 +590,12 @@ unsigned int readLinePosition()
 	return position;
 }
 
+/**
+ * @brief Drives the robot to a line.
+ * @details Tracks a line up to another line
+ * and then stops the robot. This method is
+ * blocking.
+ */
 void trackToLine()
 {
 	unsigned int pos = readLinePosition();
@@ -548,6 +613,12 @@ void trackToLine()
 	stopDrive();
 }
 
+/**
+ * @brief Drives the robot to a line in reverse.
+ * @details Tracks a line up to another line
+ * and then stops the robot. This method tracks
+ * in reverse. This method is blocking.
+ */
 void trackToLineReverse()
 {
 	unsigned int pos = readLinePosition();
@@ -565,6 +636,13 @@ void trackToLineReverse()
 	stopDrive();
 }
 
+/**
+ * @brief Track a line.
+ * @details Drive the robot at a relatively constant
+ * speed along a line. This method is non blocking.
+ * 
+ * @param int The position of the line.
+ */
 void trackLine(unsigned int position)
 {
 	int adjustedPosition = position - 3500;
@@ -573,6 +651,13 @@ void trackLine(unsigned int position)
 	tankDrive(leftDrive, rightDrive);
 }
 
+/**
+ * @brief Track a line in reverse.
+ * @details Drive the robot in reverse at a relatively constant
+ * speed along a line. This method is non blocking.
+ * 
+ * @param int The position of the line.
+ */
 void trackLineReverse(unsigned int position)
 {
 	int adjustedPosition = position - 3500;
@@ -581,6 +666,18 @@ void trackLineReverse(unsigned int position)
 	tankDrive(leftDrive, rightDrive);
 }
 
+/**
+ * @brief Drives the robot.
+ * @details Drives the robot using 
+ * tank drive. The inputs are a value from
+ * -90 to 90, unlike the servo object. This
+ * change was made here to make driving the robot
+ * a bit more intuative, with negative numbers
+ * meaning backwards motion.
+ * 
+ * @param leftSpeed The speed of the left wheels.
+ * @param rightSpeed The speed of the right wheels.
+ */
 void tankDrive(int leftSpeed, int rightSpeed)
 {
 	leftSpeed = leftSpeed + 90;
@@ -593,6 +690,10 @@ void tankDrive(int leftSpeed, int rightSpeed)
 	m_rearRight.write(rightSpeed);
 }
 
+/**
+ * @brief Stops drive.
+ * @details Stops the robot drive motors.
+ */
 void stopDrive()
 {
 	m_frontRight.write(90);
@@ -650,6 +751,16 @@ void turn(int dir)
 	}
 }
 
+/**
+ * @brief Turns the robot 180 degrees.
+ * @details Turns the robot around, stopping
+ * after passing a specfied number of lines. 
+ * It also turns in the specified direction.
+ * 
+ * @param dir The direction to turn.
+ * @param expectedLines The number of lines
+ * that are expected to be passed.
+ */
 void turnAround(int dir, int expectedLines)
 {
 	unsigned long intTime = millis();
