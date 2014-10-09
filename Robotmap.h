@@ -3,7 +3,6 @@
 
 #include "Arduino.h"
 #include "Servo.h"
-#include "LSM303.h"
 #include "QTRSensors.h"
 #include "LiquidCrystal.h"
 #include "ReactorProtocol.h"

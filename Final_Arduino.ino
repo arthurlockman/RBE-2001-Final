@@ -64,7 +64,7 @@ int conveyor_value = 90;
 int FourBar_value = 0;
 
 int m_autonomousStage = 0;
-int m_autonomousTime = 0;
+unsigned long m_autonomousTime = 0;
 
 void setup()
 {
@@ -260,19 +260,25 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 6:
-			trackToLine();
-			delay(500);
-			m_autonomousStage++;
-			break;
-		case 7:
 			setFourBar(true);
 			delay(500);
 			m_autonomousStage++;
 			break;
+		case 7:
+			trackLine(readLinePosition());
+			if (sensorAccum > 5000) 
+			{ 
+				m_autonomousStage++; 
+				m_autonomousTime = millis();
+			}
+			break;
 		case 8:
-			trackLineT(500);
-			stopDrive();
-			m_autonomousStage++;
+			trackLine(readLinePosition());
+			if (millis() - m_autonomousTime > 1000) 
+			{ 
+				tankDrive(15, 15);
+				m_autonomousStage++; 
+			}
 			break;
 		case 9:
 			openGripper();
@@ -282,14 +288,24 @@ void loop()
 			closeGripper();
 			delay(200);
 			driveConveyor(kConveyorInsert);
+			openGripper();
+			driveConveyor(kConveyorHome);
+			delay(1000);
+			stopDrive();
 			setFourBar(false);
-			delay(200);
 			m_autonomousStage++;
 			break;
 		case 10:
-			turnAround(kTurnLeft, 2);
+			trackToLineReverse();
 			m_autonomousStage++;
 			break;
+		case 11:
+			turnAround(kTurnRight, 2);
+			m_autonomousStage++;
+			break;
+		case 12:
+			trackToLine();
+			m_autonomousStage++;
 		default:
 			changeState(kDone);
 			break;
