@@ -122,6 +122,7 @@ void setup()
 	lcd.begin(16, 2);
 
 	pinMode(kStartButtonInput, INPUT_PULLUP);
+	pinMode(kPinStopLimit, INPUT_PULLUP);
 }
 
 /**
@@ -378,16 +379,8 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 16: //Track line to second reactor stop line
-			if (m_autonomousLinesPassed != m_autonomousLinesToPass)
-			{
-				trackToLine();
-				m_autonomousLinesPassed++;
-			} else {
-				m_autonomousStage++;
-				m_autonomousLinesPassed = 0;
-				m_autonomousLinesToPass = 0;
-				m_autonomousTime = millis();
-			}
+			if (digitalRead(kPinStopLimit)) { trackLine(readLinePosition()); }
+			else {m_autonomousStage++; }
 			break;
 		case 17: //Drive forward to engage second reactor.
 			if (millis() - m_autonomousTime < 1500)
@@ -992,6 +985,7 @@ void trackLineReverse(unsigned int position)
  */
 void tankDrive(int leftSpeed, int rightSpeed)
 {
+	(rightSpeed > 0) ? rightSpeed += 10 : rightSpeed -= 10;
 	leftSpeed = leftSpeed + 90;
 	rightSpeed = rightSpeed + 90;
 	(leftSpeed < 0) ? leftSpeed = 0 : (leftSpeed > 180) ? leftSpeed = 180 : leftSpeed = leftSpeed;
@@ -1044,13 +1038,8 @@ void turn(int dir)
 	{
 	case kTurnRight:
 		while (millis() - intTime < 500) { trackLine(readLinePosition()); }
-		while (sensorValues[3] > 500)
+		while (sensorValues[1] < 500) 
 		{
-			readLinePosition();
-			tankDrive(15, -15);
-		}
-		while (sensorValues[3] < 450) 
-		{ 
 			readLinePosition();
 			tankDrive(15, -15); 
 		}
@@ -1058,15 +1047,10 @@ void turn(int dir)
 		break;
 	case kTurnLeft:
 		while (millis() - intTime < 500) { trackLine(readLinePosition()); }
-		while (sensorValues[3] > 500)
-		{
-			readLinePosition();
-			tankDrive(-20, 20);
-		}
-		while (sensorValues[3] < 450) 
+		while (sensorValues[6] < 500) 
 		{ 
 			readLinePosition();
-			tankDrive(-20, 20); 
+			tankDrive(-15, 15); 
 		}
 		stopDrive();
 		break;
@@ -1089,7 +1073,7 @@ void turnAround(int dir, int expectedLines)
 	switch (dir)
 	{
 	case kTurnRight:
-		while(millis() - intTime < 400) { tankDrive(-20, -20); }
+		while(millis() - intTime < 250) { tankDrive(-20, -20); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{
@@ -1107,16 +1091,16 @@ void turnAround(int dir, int expectedLines)
 		stopDrive();
 		break;
 	case kTurnLeft:
-		while(millis() - intTime < 400) { tankDrive(-20, -20); }
+		while(millis() - intTime < 250) { tankDrive(-20, -20); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{
-			while (sensorValues[5] < 500)
+			while (sensorValues[6] < 500)
 			{ 
 				readLinePosition();
 				tankDrive(-20, 20); 
 			}
-			while (sensorValues[5] > 450)
+			while (sensorValues[6] > 450)
 			{ 
 				readLinePosition();
 				tankDrive(-20, 20); 

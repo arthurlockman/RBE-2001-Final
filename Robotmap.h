@@ -74,6 +74,7 @@ enum DigitalInputs
 	kLineSensor1 = 28,
 	kLineSensor0 = 29,
 	kLineSensorLED = 30,
+	kPinStopLimit = 31,
 	kConveyorLimit = 32,
 	kStartButtonInput = 37
 };
