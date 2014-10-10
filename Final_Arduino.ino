@@ -132,33 +132,8 @@ void setup()
  */
 void loop()
 {
-	byte _incomingPacket[10];
-	byte _incomingType;
-	byte _incomingData[3];
-	if (m_btMaster.readPacket(_incomingPacket))
-	{
-		_sendhb = 1;
-		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
-			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
-		{
-			switch (_incomingType)
-			{
-			case kBTStorageTubeAvailable:
-				updateAvailablity(_incomingData[0], &m_storageTubes);
-				break;
-			case kBTSupplyTubeAvailable:
-				updateAvailablity(_incomingData[0], &m_supplyTubes);
-				break;
-			case kBTStopMovement:
-				changeState(kPaused);
-				break;
-			case kBTResumeMovement:
-				revertState();
-				break;
-			}
-		}
-	}
-
+	char tubeAvailData[16];
+	char tubeSupplyData[16];
 	switch (kCurrentRobotState)
 	{
 	case kStartup:
@@ -242,17 +217,15 @@ void loop()
 		if (m_autonomousStage == 0)
 		{
 			lcd.clear();
-			char tubeAvailData[16];
-			snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
-				m_storageTubes.tubeThree, m_storageTubes.tubeFour);
-			char tubeSupplyData[16];
-			snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
-				m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
-			lcd.setCursor(0,0);
-			lcd.print(tubeSupplyData);
-			lcd.setCursor(0,1);
-			lcd.print(tubeAvailData);
 		}
+		snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
+			m_storageTubes.tubeThree, m_storageTubes.tubeFour);
+		snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
+			m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
+		lcd.setCursor(0,0);
+		lcd.print(tubeSupplyData);
+		lcd.setCursor(0,1);
+		lcd.print(tubeAvailData);
 		switch (m_autonomousStage)
 		{
 		case 0: //Drive conveyor down
@@ -328,19 +301,15 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 10: //Check if tube is inserted, if it isn't give it a tap.
-			delay(1000);
+			delay(2000);
 			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeFour) {
 				m_autonomousStage++;
-				break;
 			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeThree) {
 				m_autonomousStage++;
-				break;
 			} else if (m_autonomousLinesPassed == 3 && m_storageTubes.tubeTwo) {
 				m_autonomousStage++;
-				break;
 			} else if (m_autonomousLinesPassed == 4 && m_storageTubes.tubeOne) {
 				m_autonomousStage++;
-				break;
 			} else {
 				closeGripper();
 				delay(200);
@@ -463,19 +432,15 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 28: //If second rod not inserted, give it a tap.
-			delay(1000);
+			delay(2000);
 			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeOne) {
 				m_autonomousStage++;
-				break;
 			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeTwo) {
 				m_autonomousStage++;
-				break;
 			} else if (m_autonomousLinesPassed == 3 && m_storageTubes.tubeThree) {
 				m_autonomousStage++;
-				break;
 			} else if (m_autonomousLinesPassed == 4 && m_storageTubes.tubeFour) {
 				m_autonomousStage++;
-				break;
 			} else {
 				closeGripper();
 				delay(200);
@@ -512,7 +477,7 @@ void loop()
 				m_autonomousPosition = kTubeOne;
 				if (m_storageTubes.tubeOne)
 				{
-					m_autonomousStage += 3;
+					m_autonomousStage = 36;
 					break;
 				} else {
 					turn(kTurnLeft);
@@ -523,7 +488,7 @@ void loop()
 				m_autonomousPosition = kTubeTwo;
 				if (m_storageTubes.tubeTwo)
 				{
-					m_autonomousStage += 3;
+					m_autonomousStage = 36;
 				} else if (!m_storageTubes.tubeOne) {
 					turn(kTurnLeft);
 					m_autonomousNextDir = kTurnRight;
@@ -537,7 +502,7 @@ void loop()
 				m_autonomousPosition = kTubeThree;
 				if (m_storageTubes.tubeThree)
 				{
-					m_autonomousStage += 3;
+					m_autonomousStage = 36;
 				} else if (!m_storageTubes.tubeFour) {
 					m_autonomousNextDir = kTurnLeft;
 					turn(kTurnRight);
@@ -551,7 +516,7 @@ void loop()
 				m_autonomousPosition == kTubeFour;
 				if (m_storageTubes.tubeFour)
 				{
-					m_autonomousStage += 3;
+					m_autonomousStage = 36;
 				} else {
 					m_autonomousStage++;
 					turn(kTurnRight);
@@ -568,9 +533,29 @@ void loop()
 			break;
 		case 35: //Turn to face supply tube
 			turn(m_autonomousNextDir);
+			m_autonomousStage++;
 			break;
 		case 36: //Drive to supply tube.
 			trackToLine();
+			m_autonomousStage++;
+			break;
+		case 37:
+			setFourBar(true);
+			m_autonomousTime = millis();
+			while (millis() - m_autonomousTime < 500) { trackLine(readLinePosition()); }
+			m_autonomousStage++;
+			break;
+		case 38: // 
+			driveConveyor(kConveyorInsert);
+			m_autonomousStage++;
+			break;
+		case 39:
+			closeGripper();
+			driveConveyor(kConveyorHome);
+			m_autonomousStage++;
+			break;
+		case 40:
+			turnAround(kTurnRight, 2);
 			m_autonomousStage++;
 			break;
 		default: //Complete!
@@ -779,8 +764,33 @@ void revertState()
  */
 void periodicUpdate()
 {
-	//Do things here with interruptcount.
 	noInterrupts();
+	byte _incomingPacket[10];
+	byte _incomingType;
+	byte _incomingData[3];
+	if (m_btMaster.readPacket(_incomingPacket))
+	{
+		_sendhb = 1;
+		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
+			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
+		{
+			switch (_incomingType)
+			{
+			case kBTStorageTubeAvailable:
+				updateAvailablity(_incomingData[0], &m_storageTubes);
+				break;
+			case kBTSupplyTubeAvailable:
+				updateAvailablity(_incomingData[0], &m_supplyTubes);
+				break;
+			case kBTStopMovement:
+				changeState(kPaused);
+				break;
+			case kBTResumeMovement:
+				revertState();
+				break;
+			}
+		}
+	}
 	interruptCount++;
 	if (_sendhb && (interruptCount % kHeartbeatPeriod) == 0)
 	{
