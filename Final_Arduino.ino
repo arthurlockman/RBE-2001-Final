@@ -313,7 +313,7 @@ void loop()
 			} else {
 				closeGripper();
 				delay(200);
-				driveConveyor(kConveyorInsert);
+				driveConveyor(20);
 				delay(1000);
 				m_autonomousStage++;
 			}
@@ -444,7 +444,7 @@ void loop()
 			} else {
 				closeGripper();
 				delay(200);
-				driveConveyor(kConveyorInsert);
+				driveConveyor(20);
 				delay(1000);
 				m_autonomousStage++;
 			}
