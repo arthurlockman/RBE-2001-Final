@@ -134,6 +134,32 @@ void loop()
 {
 	char tubeAvailData[16];
 	char tubeSupplyData[16];
+	byte _incomingPacket[10];
+	byte _incomingType;
+	byte _incomingData[3];
+	if (m_btMaster.readPacket(_incomingPacket))
+	{
+		_sendhb = 1;
+		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
+			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
+		{
+			switch (_incomingType)
+			{
+			case kBTStorageTubeAvailable:
+				updateAvailablity(_incomingData[0], &m_storageTubes);
+				break;
+			case kBTSupplyTubeAvailable:
+				updateAvailablity(_incomingData[0], &m_supplyTubes);
+				break;
+			case kBTStopMovement:
+				changeState(kPaused);
+				break;
+			case kBTResumeMovement:
+				revertState();
+				break;
+			}
+		}
+	}
 	switch (kCurrentRobotState)
 	{
 	case kStartup:
@@ -302,7 +328,7 @@ void loop()
 			break;
 		case 10: //Check if tube is inserted, if it isn't give it a tap.
 			delay(2000);
-			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeFour) {
+			if (m_autonomousLinesPassed == 0 && m_storageTubes.tubeFour) {
 				m_autonomousStage++;
 			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeThree) {
 				m_autonomousStage++;
@@ -433,7 +459,7 @@ void loop()
 			break;
 		case 28: //If second rod not inserted, give it a tap.
 			delay(2000);
-			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeOne) {
+			if (m_autonomousLinesPassed == 0 && m_storageTubes.tubeOne) {
 				m_autonomousStage++;
 			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeTwo) {
 				m_autonomousStage++;
@@ -765,32 +791,6 @@ void revertState()
 void periodicUpdate()
 {
 	noInterrupts();
-	byte _incomingPacket[10];
-	byte _incomingType;
-	byte _incomingData[3];
-	if (m_btMaster.readPacket(_incomingPacket))
-	{
-		_sendhb = 1;
-		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
-			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
-		{
-			switch (_incomingType)
-			{
-			case kBTStorageTubeAvailable:
-				updateAvailablity(_incomingData[0], &m_storageTubes);
-				break;
-			case kBTSupplyTubeAvailable:
-				updateAvailablity(_incomingData[0], &m_supplyTubes);
-				break;
-			case kBTStopMovement:
-				changeState(kPaused);
-				break;
-			case kBTResumeMovement:
-				revertState();
-				break;
-			}
-		}
-	}
 	interruptCount++;
 	if (_sendhb && (interruptCount % kHeartbeatPeriod) == 0)
 	{
