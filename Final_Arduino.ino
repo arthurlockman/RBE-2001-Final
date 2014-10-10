@@ -1044,7 +1044,7 @@ void turn(int dir)
 	{
 	case kTurnRight:
 		while (millis() - intTime < 500) { trackLine(readLinePosition()); }
-		while (sensorValues[2] < 500) 
+		while (sensorValues[3] < 500) 
 		{ 
 			readLinePosition();
 			tankDrive(15, -15); 
@@ -1053,7 +1053,7 @@ void turn(int dir)
 		break;
 	case kTurnLeft:
 		while (millis() - intTime < 500) { trackLine(readLinePosition()); }
-		while (sensorValues[6] < 300) 
+		while (sensorValues[3] < 300) 
 		{ 
 			readLinePosition();
 			tankDrive(-20, 20); 
@@ -1101,12 +1101,12 @@ void turnAround(int dir, int expectedLines)
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{
-			while (sensorValues[6] < 500)
+			while (sensorValues[5] < 500)
 			{ 
 				readLinePosition();
 				tankDrive(-20, 20); 
 			}
-			while (sensorValues[6] > 450)
+			while (sensorValues[5] > 450)
 			{ 
 				readLinePosition();
 				tankDrive(-20, 20); 
