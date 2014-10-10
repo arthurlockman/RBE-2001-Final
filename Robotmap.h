@@ -163,6 +163,16 @@ enum ConveyorPositions
 	kConveyorDown = 275,
 };
 
+enum RobotPosition
+{
+	kTubeOne,
+	kTubeTwo,
+	kTubeThree,
+	kTubeFour,
+	kReactorOne,
+	kReactorTwo
+};
+
 ///A structure to hold a bluetooth packet.
 struct BTPacket
 {

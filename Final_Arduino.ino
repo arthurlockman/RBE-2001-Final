@@ -66,6 +66,8 @@ int m_autonomousStage = 0;
 unsigned long m_autonomousTime = 0;
 int m_autonomousLinesPassed = 0;
 int m_autonomousLinesToPass = 0;
+Direction m_autonomousNextDir = kTurnRight;
+RobotPosition m_autonomousPosition = kReactorOne;
 
 /**
  * @brief This method initializes all objects in
@@ -511,19 +513,73 @@ void loop()
 			trackToLine();
 			m_autonomousStage++;
 			break;
-		case 33: //Determine which storage tube to go for first.
-			if (m_autonomousLinesPassed == 1)
+		case 33: //Determine which supply tube to go for first.
+			if (m_autonomousLinesPassed == 1) //if already at tube 1
 			{
+				m_autonomousPosition = kTubeOne;
 				if (m_storageTubes.tubeOne)
 				{
-					m_autonomousStage++;
+					m_autonomousStage += 3;
 					break;
 				} else {
 					turn(kTurnLeft);
 					m_autonomousStage++;
+					m_autonomousNextDir = kTurnRight;
 				}
-			} else if (m_autonomousLinesPassed == 2) {
+			} else if (m_autonomousLinesPassed == 2) { //if at tube 2
+				m_autonomousPosition = kTubeTwo;
+				if (m_storageTubes.tubeTwo)
+				{
+					m_autonomousStage += 3;
+				} else if (!m_storageTubes.tubeOne) {
+					turn(kTurnLeft);
+					m_autonomousNextDir = kTurnRight;
+					m_autonomousStage++;
+				} else {
+					turn(kTurnRight);
+					m_autonomousNextDir = kTurnLeft;
+					m_autonomousStage++;
+				}
+			} else if (m_autonomousLinesPassed == 3) { //if at tube 3
+				m_autonomousPosition = kTubeThree;
+				if (m_storageTubes.tubeThree)
+				{
+					m_autonomousStage += 3;
+				} else if (!m_storageTubes.tubeFour) {
+					m_autonomousNextDir = kTurnLeft;
+					turn(kTurnRight);
+					m_autonomousStage++;
+				} else {
+					turn(kTurnLeft);
+					m_autonomousNextDir = kTurnRight;
+					m_autonomousStage++;
+				}
+			} else if (m_autonomousLinesPassed == 4) { //if at tube 4
+				m_autonomousPosition == kTubeFour;
+				if (m_storageTubes.tubeFour)
+				{
+					m_autonomousStage += 3;
+				} else {
+					m_autonomousStage++;
+					turn(kTurnRight);
+					m_autonomousNextDir = kTurnLeft;
+				}
 			}
+			m_autonomousLinesPassed = 0;
+			m_autonomousLinesToPass = supplyLinesToCross(m_autonomousPosition);
+			break;
+		case 34: //Drive to supply tube crossing
+			trackToLine();
+			m_autonomousLinesPassed++;
+			if (m_autonomousLinesPassed == m_autonomousLinesToPass) { m_autonomousStage++; }
+			break;
+		case 35: //Turn to face supply tube
+			turn(m_autonomousNextDir);
+			break;
+		case 36: //Drive to supply tube.
+			trackToLine();
+			m_autonomousStage++;
+			break;
 		default: //Complete!
 			changeState(kDone);
 			lcd.clear();
@@ -537,6 +593,55 @@ void loop()
 	case kDone:
 		lcd.setCursor(0,0);
 		lcd.print("Done!");
+		break;
+	}
+}
+
+/**
+ * @brief Number of lines to cross to reach desired
+ * supply tube.
+ * @details This method determines the number of lines the robot needs
+ * to cross to reach the desired supply tube. It takes in the current
+ * position and returns a number.
+ * 
+ * @param startPos The starting RobotPosition.
+ * @return The number of lines to cross to get to the next
+ * open tube.
+ */
+int supplyLinesToCross(RobotPosition startPos)
+{
+	switch (startPos)
+	{
+	case kTubeOne:
+		if (m_supplyTubes.tubeTwo)
+			return 1;
+		else if (m_supplyTubes.tubeThree)
+			return 2;
+		else if (m_supplyTubes.tubeFour)
+			return 3;
+		break;
+	case kTubeTwo:
+		if (m_supplyTubes.tubeThree || m_supplyTubes.tubeOne)
+			return 1;
+		else if (m_supplyTubes.tubeFour)
+			return 2;
+		break;
+	case kTubeThree:
+		if (m_supplyTubes.tubeFour || m_supplyTubes.tubeTwo)
+			return 1;
+		else if (m_supplyTubes.tubeOne)
+			return 2;
+		break;
+	case kTubeFour:
+		if (m_supplyTubes.tubeThree)
+			return 1;
+		else if (m_supplyTubes.tubeTwo)
+			return 2;
+		else if (m_supplyTubes.tubeOne)
+			return 3;
+		break;
+	default:
+		return -1;
 		break;
 	}
 }
