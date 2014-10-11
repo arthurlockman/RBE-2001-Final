@@ -184,7 +184,7 @@ void loop()
 		if (!digitalRead(kStartButtonInput))
 		{
 			Serial.println("Starting auto...");
-			changeState(kAutonomous);
+			changeState(kBegin);
 			lcd.clear();
 			lcd.setCursor(0,0);
 		}
@@ -242,6 +242,14 @@ void loop()
 		// 	changeState(kAutonomous);
 		// }
 		break;
+	case kBegin:
+		trackLine(readLinePosition());
+		if(digitalRead(kPinStopLimit) == LOW)
+		{
+			kCurrentRobotState = kAutonomous;
+		}
+		break;
+
 	case kAutonomous:		
 		if (m_autonomousStage == 0)
 		{
@@ -323,6 +331,7 @@ void loop()
 				trackLine(readLinePosition());
 				m_autonomousStage++; 
 			}
+			stopDrive();
 			break;
 		case 9: //Release tube into first storage.
 			openGripper();
@@ -824,11 +833,11 @@ void setFourBar(bool out)
 {
 	if(out)
 	{
-		m_lineup.write(50);
+		m_lineup.write(40);
 	}
 	else
 	{
-		m_lineup.write(5);
+		m_lineup.write(2);
 	}
 
 }
@@ -1172,7 +1181,7 @@ void turnAround(int dir, int expectedLines)
 	switch (dir)
 	{
 	case kTurnRight:
-		while(millis() - intTime < 250) { tankDrive(-20, -20); }
+		while(millis() - intTime < 200) { tankDrive(-20, -20); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{
@@ -1190,7 +1199,7 @@ void turnAround(int dir, int expectedLines)
 		stopDrive();
 		break;
 	case kTurnLeft:
-		while(millis() - intTime < 250) { tankDrive(-20, -20); }
+		while(millis() - intTime < 200) { tankDrive(-20, -20); }
 		stopDrive();
 		for (int i = 0; i < expectedLines; i++)
 		{

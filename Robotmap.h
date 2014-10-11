@@ -39,7 +39,8 @@ enum AutonomousStates
 	kAutoDriveToSupply,
 	kAutoDriveToReactor,
 	kAutoReplaceRod,
-	kAutoDone
+	kAutoDone,
+	kBegin
 };
 
 enum Direction
