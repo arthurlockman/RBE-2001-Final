@@ -329,7 +329,6 @@ void loop()
 			if (millis() - m_autonomousTime > 1000) 
 			{ 
 				trackLine(readLinePosition());
-				stopDrive();
 				m_autonomousStage++; 
 			}
 			break;
