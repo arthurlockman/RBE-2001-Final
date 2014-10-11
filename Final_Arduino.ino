@@ -509,7 +509,7 @@ void loop()
 			if (m_autonomousLinesPassed == 1) //if already at tube 1
 			{
 				m_autonomousPosition = kTubeOne;
-				if (m_storageTubes.tubeOne)
+				if (m_supplyTubes.tubeOne)
 				{
 					m_autonomousStage = 36;
 					break;
@@ -520,10 +520,10 @@ void loop()
 				}
 			} else if (m_autonomousLinesPassed == 2) { //if at tube 2
 				m_autonomousPosition = kTubeTwo;
-				if (m_storageTubes.tubeTwo)
+				if (m_supplyTubes.tubeTwo)
 				{
 					m_autonomousStage = 36;
-				} else if (!m_storageTubes.tubeOne) {
+				} else if (!m_supplyTubes.tubeOne) {
 					turn(kTurnLeft);
 					m_autonomousNextDir = kTurnRight;
 					m_autonomousStage++;
@@ -534,10 +534,10 @@ void loop()
 				}
 			} else if (m_autonomousLinesPassed == 3) { //if at tube 3
 				m_autonomousPosition = kTubeThree;
-				if (m_storageTubes.tubeThree)
+				if (m_supplyTubes.tubeThree)
 				{
 					m_autonomousStage = 36;
-				} else if (!m_storageTubes.tubeFour) {
+				} else if (!m_supplyTubes.tubeFour) {
 					m_autonomousNextDir = kTurnLeft;
 					turn(kTurnRight);
 					m_autonomousStage++;
@@ -548,7 +548,7 @@ void loop()
 				}
 			} else if (m_autonomousLinesPassed == 4) { //if at tube 4
 				m_autonomousPosition == kTubeFour;
-				if (m_storageTubes.tubeFour)
+				if (m_supplyTubes.tubeFour)
 				{
 					m_autonomousStage = 36;
 				} else {
@@ -635,19 +635,19 @@ void loop()
 			{m_autonomousStage = 100;}
 			break;
 		case 46:
-			if(m_storageTubes.tubeFour)
+			if(m_supplyTubes.tubeFour)
 			{
 				m_autonomousLinesToPass = 4;
 			}
-			else if(m_storageTubes.tubeThree)
+			else if(m_supplyTubes.tubeThree)
 			{
 				m_autonomousLinesToPass = 3;
 			}
-			else if(m_storageTubes.tubeTwo)
+			else if(m_supplyTubes.tubeTwo)
 			{
 				m_autonomousLinesToPass = 2;
 			}
-			else if(m_storageTubes.tubeOne)
+			else if(m_supplyTubes.tubeOne)
 			{
 				m_autonomousLinesToPass = 1;
 			}
@@ -1149,7 +1149,7 @@ void turn(int dir)
 		while (sensorValues[6] < 500) 
 		{ 
 			readLinePosition();
-			tankDrive(-15, 15); 
+			tankDrive(-25, 15); 
 		}
 		stopDrive();
 		break;
