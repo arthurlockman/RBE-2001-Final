@@ -22,6 +22,8 @@ Servo m_lineup;
 Servo m_conveyor;
 LiquidCrystal lcd(40, 41, 39, 38, 37, 36);
 
+bool second_pass = false;
+
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
 BumpSensor m_bumpSensor(kAccX, kAccY, kAccZ, 50);
 
@@ -327,7 +329,7 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 10: //Check if tube is inserted, if it isn't give it a tap.
-			delay(2000);
+			delay(500);
 			if (m_autonomousLinesPassed == 0 && m_storageTubes.tubeFour) {
 				m_autonomousStage++;
 			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeThree) {
@@ -340,7 +342,7 @@ void loop()
 				closeGripper();
 				delay(200);
 				driveConveyor(20);
-				delay(1000);
+				delay(500);
 				m_autonomousStage++;
 			}
 			break;
@@ -413,6 +415,7 @@ void loop()
 			{
 				trackToLine();
 				m_autonomousStage++;
+				m_autonomousLinesPassed++;
 			} else if (!m_storageTubes.tubeTwo) {
 				trackToLine();
 				m_autonomousLinesPassed++;
@@ -458,8 +461,8 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 28: //If second rod not inserted, give it a tap.
-			delay(2000);
-			if (m_autonomousLinesPassed == 0 && m_storageTubes.tubeOne) {
+			delay(500);
+			if (m_autonomousLinesPassed == 1 && m_storageTubes.tubeOne) {
 				m_autonomousStage++;
 			} else if (m_autonomousLinesPassed == 2 && m_storageTubes.tubeTwo) {
 				m_autonomousStage++;
@@ -471,7 +474,7 @@ void loop()
 				closeGripper();
 				delay(200);
 				driveConveyor(20);
-				delay(1000);
+				delay(500);
 				m_autonomousStage++;
 			}
 			break;
@@ -548,7 +551,7 @@ void loop()
 					turn(kTurnRight);
 					m_autonomousNextDir = kTurnLeft;
 				}
-			}
+			} else {turn(kTurnRight);}
 			m_autonomousLinesPassed = 0;
 			m_autonomousLinesToPass = supplyLinesToCross(m_autonomousPosition);
 			break;
@@ -567,22 +570,92 @@ void loop()
 			break;
 		case 37:
 			setFourBar(true);
+			delay(600);
 			m_autonomousTime = millis();
 			while (millis() - m_autonomousTime < 500) { trackLine(readLinePosition()); }
 			m_autonomousStage++;
 			break;
 		case 38: // 
-			driveConveyor(kConveyorInsert);
+			driveConveyor(kConveyorRemove);
 			m_autonomousStage++;
 			break;
 		case 39:
 			closeGripper();
+			delay(200);
 			driveConveyor(kConveyorHome);
 			m_autonomousStage++;
 			break;
 		case 40:
+			setFourBar(false);
+			delay(200);
+			trackToLineReverse();
+			delay(300);
 			turnAround(kTurnRight, 2);
 			m_autonomousStage++;
+			break;
+		case 41:
+			trackToLine();
+			m_autonomousStage++;
+			break;
+		case 42:
+			if(!second_pass)
+			{turn(kTurnLeft);}
+			else
+			{turn(kTurnRight);}
+			m_autonomousStage++;
+			break;
+		case 43:
+			trackLine(readLinePosition());
+			if(digitalRead(kPinStopLimit) == LOW)
+			{
+				m_autonomousStage++;
+			}
+			break;
+		case 44:
+			tankDrive(10,10);
+			driveConveyor(kConveyorDown);
+			delay(200);
+			openGripper();
+			delay(200);
+			driveConveyor(kConveyorHome);
+			m_autonomousStage++;
+			break;
+		case 45:
+			turnAround(kTurnRight, 2);
+			if(!second_pass)
+			{m_autonomousStage++;}
+			else
+			{m_autonomousStage = 100;}
+			break;
+		case 46:
+			if(m_storageTubes.tubeFour)
+			{
+				m_autonomousLinesToPass = 4;
+			}
+			else if(m_storageTubes.tubeThree)
+			{
+				m_autonomousLinesToPass = 3;
+			}
+			else if(m_storageTubes.tubeTwo)
+			{
+				m_autonomousLinesToPass = 2;
+			}
+			else if(m_storageTubes.tubeOne)
+			{
+				m_autonomousLinesToPass = 1;
+			}
+			m_autonomousLinesPassed = 0;
+			m_autonomousStage++;
+			break;
+		case 47:
+			trackToLine();
+			m_autonomousLinesPassed++;
+			if(m_autonomousLinesPassed == m_autonomousLinesToPass)
+			{
+				m_autonomousNextDir = kTurnRight;
+				second_pass = true;
+				m_autonomousStage = 35;
+			}
 			break;
 		default: //Complete!
 			changeState(kDone);

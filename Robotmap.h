@@ -162,6 +162,7 @@ enum ConveyorPositions
 	kConveyorHome = 0,
 	kConveyorInsert = 30, //@TODO: Determine This Value.
 	kConveyorDown = 275,
+	kConveyorRemove = 20
 };
 
 enum RobotPosition
