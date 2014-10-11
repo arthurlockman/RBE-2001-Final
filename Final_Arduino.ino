@@ -23,6 +23,7 @@ Servo m_conveyor;
 LiquidCrystal lcd(40, 41, 39, 38, 37, 36);
 
 bool second_pass = false;
+bool has_new_rod = false, has_old_rod = false; 
 
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
 BumpSensor m_bumpSensor(kAccX, kAccY, kAccZ, 50);
@@ -268,6 +269,7 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 2: //Drive conveyor up
+			has_old_rod = true;
 			driveConveyor(kConveyorInsert);
 			stopDrive();
 			delay(100);
@@ -345,6 +347,7 @@ void loop()
 				delay(500);
 				m_autonomousStage++;
 			}
+			has_old_rod = false;
 			break;
 		case 11: //Retract fourbar and gripper to move to second reactor for pickup
 			openGripper();
@@ -400,6 +403,7 @@ void loop()
 			m_autonomousStage++;
 			break;
 		case 20: //Lift second reactor spent rod.
+			has_old_rod = true;
 			driveConveyor(kConveyorInsert);
 			stopDrive();
 			delay(100);
@@ -477,6 +481,7 @@ void loop()
 				delay(500);
 				m_autonomousStage++;
 			}
+			has_old_rod = false;
 			break;
 		case 29: //Retract fourbar to head for new rods.
 			openGripper();
@@ -583,6 +588,7 @@ void loop()
 			closeGripper();
 			delay(200);
 			driveConveyor(kConveyorHome);
+			has_new_rod = true;
 			m_autonomousStage++;
 			break;
 		case 40:
@@ -618,6 +624,7 @@ void loop()
 			openGripper();
 			delay(200);
 			driveConveyor(kConveyorHome);
+			has_new_rod = false;
 			m_autonomousStage++;
 			break;
 		case 45:
@@ -821,7 +828,7 @@ void setFourBar(bool out)
 	}
 	else
 	{
-		m_lineup.write(0);
+		m_lineup.write(5);
 	}
 
 }
@@ -869,6 +876,10 @@ void periodicUpdate()
 	{
 		sendHeartbeat();
 	}
+	if((has_old_rod || has_new_rod) && (interruptCount % kHeartbeatPeriod) == 0)
+	{
+		sendRadiation();
+	}
 	if (!m_packetQueue.isEmpty())
 	{
 		BTPacket p = m_packetQueue.pop();
@@ -884,6 +895,11 @@ void periodicUpdate()
 void sendHeartbeat()
 {
 	m_packetQueue.push(kPktHeartbeat);
+}
+
+void sendRadiation()
+{
+	m_packetQueue.push(has_old_rod? kPktRadiationAlertLow:kPktRadiationAlertHigh);
 }
 
 /**
