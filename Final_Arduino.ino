@@ -80,9 +80,10 @@ RobotPosition m_autonomousPosition = kReactorOne;
  */
 void setup()
 {
-	Serial.begin(115200);
-	Serial1.begin(115200);
+	Serial.begin(115200); // Serial
+	Serial1.begin(115200); // Bluetooth
 
+	// Attach Motors
 	m_frontRight.attach(kFrontRightMotor);
 	m_frontLeft.attach(kFrontLeftMotor);
 	m_rearRight.attach(kRearRightMotor);
@@ -94,8 +95,10 @@ void setup()
 	m_conveyor.attach(kConveyerMotor);
 	
 	Timer3.initialize(kTimerPeriod);
-	Timer3.attachInterrupt(periodicUpdate);
+	Timer3.attachInterrupt(periodicUpdate); // Periodically updates the bluetooth.
 
+	// Bluetooth packet formation.
+	// Forms the radiation and heartbeat packets.
 	m_reactor.setDst(0x00);
 	_heartbeatSize = m_reactor.createPkt(kBTHeartbeat, _heartbeatData, _heartbeatPacket);
 	_radAlertHighPacketData[0] = kRadiationCarryingNew;
@@ -105,6 +108,7 @@ void setup()
 	_radAlertLowPacketSize = m_reactor.createPkt(kBTRadiationAlert, 
 		_radAlertLowPacketData, _radAlertLowPacket);
 
+	// Base information for storage and supply tubes. 
 	m_storageTubes.tubeOne = 0;
 	m_storageTubes.tubeTwo = 0;
 	m_storageTubes.tubeThree = 0;
@@ -114,6 +118,7 @@ void setup()
 	m_supplyTubes.tubeThree = 1;
 	m_supplyTubes.tubeFour = 1;
 
+	// Bluetooth packet information.
 	kPktHeartbeat.packetData = _heartbeatPacket;
 	kPktHeartbeat.packetSize = _heartbeatSize;
 	kPktRadiationAlertHigh.packetData = _radAlertHighPacket;
@@ -121,8 +126,10 @@ void setup()
 	kPktRadiationAlertLow.packetData = _radAlertLowPacket;
 	kPktRadiationAlertLow.packetSize = _radAlertLowPacketSize;
 
+	// Begin the lcd
 	lcd.begin(16, 2);
 
+	// Set the sensor pins.
 	pinMode(kStartButtonInput, INPUT_PULLUP);
 	pinMode(kPinStopLimit, INPUT_PULLUP);
 	pinMode(kRadiationAlertHigh, OUTPUT);
@@ -141,13 +148,16 @@ void loop()
 	byte _incomingPacket[10];
 	byte _incomingType;
 	byte _incomingData[3];
+	// Read all of the incoming packets from the bluetooth master. 
 	while (m_btMaster.readPacket(_incomingPacket))
 	{
 		Serial.println("Got packet.");
 		_sendhb = 1;
+		// Make sure packet is addressed to us. 
 		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
 			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
 		{
+			// Switch for which packet we recieved. 
 			Serial.println("Got packet addressed to us.");
 			switch (_incomingType)
 			{
@@ -155,15 +165,15 @@ void loop()
 				Serial.println("Got storage tube availability.");
 				updateAvailablity(_incomingData[0], &m_storageTubes);
 				break;
-			case kBTSupplyTubeAvailable:
+			case kBTSupplyTubeAvailable: 
 				Serial.println("Got supply tube availablity.");
 				updateAvailablity(_incomingData[0], &m_supplyTubes);
 				break;
-			case kBTStopMovement:
+			case kBTStopMovement: // Case for robot stop.
 				Serial.println("Got stop message.");
 				changeState(kPaused);
 				break;
-			case kBTResumeMovement:
+			case kBTResumeMovement: // Case for robot resume.
 				revertState();
 				Serial.println("Got resume message.");
 				break;
@@ -175,7 +185,7 @@ void loop()
 	}
 	switch (kCurrentRobotState)
 	{
-	case kStartup:
+	case kStartup: // Case for calibrating sensors and preparing the robot to run. 
 		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.print("Calib. line...");
@@ -190,7 +200,7 @@ void loop()
 		lcd.print("Wait for start..");
 		changeState(kWaitForBluetooth);
 		break;
-	case kWaitForBluetooth:
+	case kWaitForBluetooth: // Waits for bluetooth to connect. Press button on top to start. 
 		if (!digitalRead(kStartButtonInput))
 		{
 			Serial.println("Starting auto...");
@@ -199,9 +209,7 @@ void loop()
 			lcd.setCursor(0,0);
 		}
 		break;
-	case kTankDrive:
-		break;
-	case kBegin:
+	case kBegin: // Robot begins on center line. Tracks line until it encounters the reactor tube.
 		trackLine(readLinePosition());
 		if(digitalRead(kPinStopLimit) == LOW)
 		{
@@ -209,15 +217,17 @@ void loop()
 		}
 		break;
 
-	case kAutonomous:		
+	case kAutonomous: // Case for all of the autonomous code. 		
 		if (m_autonomousStage == 0)
 		{
 			lcd.clear();
 		}
+		// Get supply and storage tube information.
 		snprintf(tubeAvailData, 16, "%d %d  %d %d", m_storageTubes.tubeOne, m_storageTubes.tubeTwo, 
-			m_storageTubes.tubeThree, m_storageTubes.tubeFour);
+			m_storageTubes.tubeThree, m_storageTubes.tubeFour); 
 		snprintf(tubeSupplyData, 16, "%d %d  %d %d", m_supplyTubes.tubeOne, m_supplyTubes.tubeTwo, 
 			m_supplyTubes.tubeThree, m_supplyTubes.tubeFour);
+		// Print supply and storage information to the lcd.
 		lcd.setCursor(0,0);
 		lcd.print(tubeSupplyData);
 		lcd.setCursor(0,1);
@@ -544,18 +554,18 @@ void loop()
 			trackToLine();
 			m_autonomousStage++;
 			break;
-		case 37:
+		case 37: // Extend the four bar and drive up to the tube.
 			setFourBar(true);
 			delay(600);
 			m_autonomousTime = millis();
 			while (millis() - m_autonomousTime < 500) { trackLine(readLinePosition()); }
 			m_autonomousStage++;
 			break;
-		case 38: // 
+		case 38: // Drive the claw to the remove position
 			driveConveyor(kConveyorRemove);
 			m_autonomousStage++;
 			break;
-		case 39:
+		case 39: // Grab the rod and extract it
 			closeGripper();
 			delay(200);
 			driveConveyor(kConveyorHome);
@@ -563,7 +573,7 @@ void loop()
 			digitalWrite(kRadiationAlertHigh, HIGH);
 			m_autonomousStage++;
 			break;
-		case 40:
+		case 40: // Retract the four bar, back up, and turn around.
 			setFourBar(false);
 			delay(200);
 			trackToLineReverse();
@@ -571,25 +581,25 @@ void loop()
 			turnAround(kTurnRight, 2);
 			m_autonomousStage++;
 			break;
-		case 41:
+		case 41: // Track to the middle of the field.
 			trackToLine();
 			m_autonomousStage++;
 			break;
-		case 42:
+		case 42: // Turn left if it's the first supply rod, else right.
 			if(!second_pass)
 			{turn(kTurnLeft);}
 			else
 			{turn(kTurnRight);}
 			m_autonomousStage++;
 			break;
-		case 43:
+		case 43: // Track line to the reactor tube.
 			trackLine(readLinePosition());
 			if(digitalRead(kPinStopLimit) == LOW)
 			{
 				m_autonomousStage++;
 			}
 			break;
-		case 44:
+		case 44: // Insert the rod into the tube. 
 			tankDrive(10,10);
 			driveConveyor(kConveyorDown);
 			delay(200);
@@ -600,14 +610,14 @@ void loop()
 			digitalWrite(kRadiationAlertHigh, LOW);
 			m_autonomousStage++;
 			break;
-		case 45:
+		case 45: // Turn around. Stop if done with all rods.
 			turnAround(kTurnRight, 2);
 			if(!second_pass)
 			{m_autonomousStage++;}
 			else
 			{m_autonomousStage = 100;}
 			break;
-		case 46:
+		case 46: // Find the line for the next supply rod.
 			if(m_supplyTubes.tubeFour)
 			{
 				m_autonomousLinesToPass = 4;
@@ -627,7 +637,7 @@ void loop()
 			m_autonomousLinesPassed = 0;
 			m_autonomousStage++;
 			break;
-		case 47:
+		case 47: // Track to the line of the next supply tube. Loop to step 35. 
 			trackToLine();
 			m_autonomousLinesPassed++;
 			if(m_autonomousLinesPassed == m_autonomousLinesToPass)
@@ -643,12 +653,12 @@ void loop()
 			break;
 		}
 		break;
-	case kPaused:
+	case kPaused: // Pause command sent from master bluetooth. 
 		Serial.println("Robot paused.");
 		stopDrive();
 		delay(100);
 		break;
-	case kDone:
+	case kDone: // Robot has completed all tasks. 
 		lcd.setCursor(0,0);
 		lcd.print("Done!");
 		break;
