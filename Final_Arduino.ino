@@ -142,10 +142,12 @@ void loop()
 	byte _incomingData[3];
 	if (m_btMaster.readPacket(_incomingPacket))
 	{
+		Serial.println("Got packet.");
 		_sendhb = 1;
 		if (m_reactor.getData(_incomingPacket, _incomingData, _incomingType) && 
 			(_incomingPacket[4] == kAddressRobot || _incomingPacket[4] == kAddressFMS))
 		{
+			Serial.println("Got packet addressed to us.");
 			switch (_incomingType)
 			{
 			case kBTStorageTubeAvailable:
@@ -155,10 +157,12 @@ void loop()
 				updateAvailablity(_incomingData[0], &m_supplyTubes);
 				break;
 			case kBTStopMovement:
+				Serial.println("Got stop message.");
 				changeState(kPaused);
 				break;
 			case kBTResumeMovement:
 				revertState();
+				Serial.println("Got resume message.");
 				break;
 			}
 		}
@@ -863,9 +867,7 @@ void changeState(int newState)
  */
 void revertState()
 {
-	int _tmp = kPreviousRobotState;
-	kPreviousRobotState = kCurrentRobotState;
-	kCurrentRobotState = _tmp;
+	changeState(kPreviousRobotState);
 }
 
 /**
