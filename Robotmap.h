@@ -12,7 +12,6 @@
 #include "Wire.h"
 #include "QTRSensors.h"
 #include "QueueList.h"
-#include "BumpSensor.h"
 
 #define DEBUG 1
 #define TEAM_NUMBER 2

@@ -26,7 +26,6 @@ bool second_pass = false;
 bool has_new_rod = false, has_old_rod = false; 
 
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
-BumpSensor m_bumpSensor(kAccX, kAccY, kAccZ, 50);
 
 ReactorProtocol m_reactor(kAddressRobot);
 BluetoothMaster m_btMaster;
@@ -201,57 +200,6 @@ void loop()
 		}
 		break;
 	case kTankDrive:
-		// leftdrive = ppm.getChannel(3);
-		// rightdrive = ppm.getChannel(2);
-
-		// if (abs(ppm.getChannel(5) - claw_value) > 150)
-		// {
-		// 	if (ppm.getChannel(5) < 90)
-		// 	{
-		// 		claw_value = 0;
-		// 	}
-		// 	else
-		// 	{
-		// 		claw_value = 180;
-		// 	}
-		// }
-
-		// conveyor_value = ppm.getChannel(6);
-
-		// if (abs(ppm.getChannel(4) - 90) > 30)
-		// {
-		// 	if (ppm.getChannel(4) < 90)
-		// 	{
-		// 		FourBar_value = 0;
-		// 	}
-		// 	else
-		// 	{
-		// 		FourBar_value = 80;
-		// 	}
-		// }
-
-		// m_frontLeft.write(leftdrive);
-		// m_rearLeft.write(leftdrive);
-		// m_frontRight.write(180 - rightdrive);
-		// m_rearRight.write(180 - rightdrive);
-		// m_claw.write(claw_value);
-		// if (abs(conveyor_value - 90) > 30)
-		// {
-		// 	if (conveyor_value < 90)
-		// 	{
-		// 		driveConveyor(kConveyorDown);
-		// 	}
-		// 	else
-		// 	{
-		// 		driveConveyor(kConveyorHome);
-		// 	}
-		// }
-		// m_lineup.write(FourBar_value);
-		// if (!digitalRead(kStartButtonInput))
-		// {
-		// 	stopDrive();
-		// 	changeState(kAutonomous);
-		// }
 		break;
 	case kBegin:
 		trackLine(readLinePosition());
@@ -850,7 +798,7 @@ void setFourBar(bool out)
 {
 	if(out)
 	{
-		m_lineup.write(40);
+		m_lineup.write(30);
 	}
 	else
 	{
