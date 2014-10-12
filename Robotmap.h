@@ -77,7 +77,9 @@ enum DigitalInputs
 	kLineSensorLED = 30,
 	kPinStopLimit = 31,
 	kConveyorLimit = 32,
-	kStartButtonInput = 37
+	kStartButtonInput = 37,
+	kRadiationAlertLow = 52,
+	kRadiationAlertHigh = 53
 };
 
 ///The Analog inputs on the robot.

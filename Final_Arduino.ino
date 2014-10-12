@@ -126,6 +126,8 @@ void setup()
 
 	pinMode(kStartButtonInput, INPUT_PULLUP);
 	pinMode(kPinStopLimit, INPUT_PULLUP);
+	pinMode(kRadiationAlertHigh, OUTPUT);
+	pinMode(kRadiationAlertLow, OUTPUT);
 }
 
 /**
@@ -140,7 +142,7 @@ void loop()
 	byte _incomingPacket[10];
 	byte _incomingType;
 	byte _incomingData[3];
-	if (m_btMaster.readPacket(_incomingPacket))
+	while (m_btMaster.readPacket(_incomingPacket))
 	{
 		Serial.println("Got packet.");
 		_sendhb = 1;
@@ -151,9 +153,11 @@ void loop()
 			switch (_incomingType)
 			{
 			case kBTStorageTubeAvailable:
+				Serial.println("Got storage tube availability.");
 				updateAvailablity(_incomingData[0], &m_storageTubes);
 				break;
 			case kBTSupplyTubeAvailable:
+				Serial.println("Got supply tube availablity.");
 				updateAvailablity(_incomingData[0], &m_supplyTubes);
 				break;
 			case kBTStopMovement:
@@ -163,6 +167,9 @@ void loop()
 			case kBTResumeMovement:
 				revertState();
 				Serial.println("Got resume message.");
+				break;
+			default:
+				Serial.println("Got unknown.");
 				break;
 			}
 		}
@@ -282,6 +289,7 @@ void loop()
 			break;
 		case 2: //Drive conveyor up
 			has_old_rod = true;
+			digitalWrite(kRadiationAlertLow, HIGH);
 			driveConveyor(kConveyorInsert);
 			stopDrive();
 			delay(100);
@@ -360,6 +368,7 @@ void loop()
 				m_autonomousStage++;
 			}
 			has_old_rod = false;
+			digitalWrite(kRadiationAlertLow, LOW);
 			break;
 		case 11: //Retract fourbar and gripper to move to second reactor for pickup
 			openGripper();
@@ -416,6 +425,7 @@ void loop()
 			break;
 		case 20: //Lift second reactor spent rod.
 			has_old_rod = true;
+			digitalWrite(kRadiationAlertLow, HIGH);
 			driveConveyor(kConveyorInsert);
 			stopDrive();
 			delay(100);
@@ -494,6 +504,7 @@ void loop()
 				m_autonomousStage++;
 			}
 			has_old_rod = false;
+			digitalWrite(kRadiationAlertLow, LOW);
 			break;
 		case 29: //Retract fourbar to head for new rods.
 			openGripper();
@@ -601,6 +612,7 @@ void loop()
 			delay(200);
 			driveConveyor(kConveyorHome);
 			has_new_rod = true;
+			digitalWrite(kRadiationAlertHigh, HIGH);
 			m_autonomousStage++;
 			break;
 		case 40:
@@ -637,6 +649,7 @@ void loop()
 			delay(200);
 			driveConveyor(kConveyorHome);
 			has_new_rod = false;
+			digitalWrite(kRadiationAlertHigh, LOW);
 			m_autonomousStage++;
 			break;
 		case 45:
@@ -684,6 +697,7 @@ void loop()
 		break;
 	case kPaused:
 		Serial.println("Robot paused.");
+		stopDrive();
 		delay(100);
 		break;
 	case kDone:
