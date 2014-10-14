@@ -1,3 +1,20 @@
+/**
+ * @brief Team 2 code for RBE 2001 A14
+ * @details This code runs our robot, Spud. The robot
+ * was designed to complete the RBE 2001 challenge: changing
+ * the "nuclear fuel rods" in the "nuclear reactors". This
+ * challenge is designed to simulate a task that a robot 
+ * might have to do in the real world. The challenge requires
+ * the robot to complete the entire task autonomously, and 
+ * use sensors to determine the state of field elements 
+ * to be able ot successfully complete the task. It also 
+ * requires the robot to communicate to the field computer 
+ * over bluetooth to exchange information about the 
+ * availability and positioning of fuel rods.
+ *  
+ * @author Arthur Lockman, Tucker Haydon, and Logan Tutt
+ * @modified 10/14/2014
+ */
 #include "Robotmap.h"
 
 #define NUM_SENSORS 8
