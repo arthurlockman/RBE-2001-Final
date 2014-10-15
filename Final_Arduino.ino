@@ -12,6 +12,37 @@
  * over bluetooth to exchange information about the 
  * availability and positioning of fuel rods.
  *  
+ * Digital Pins:
+ * Motors:
+ * Front Right:     D6
+ * Front Left:      D7
+ * Rear Right:      D8
+ * Rear Left:       D9
+ * Claw:            D10
+ * Conveyor:        D11
+ * Fourbar:         D12
+ * Other IO Pins:
+ * Encoder 1:       D3
+ * Encoder 2:       D20
+ * Line Sensor 7:   D22
+ * Line Sensor 6:   D23
+ * Line Sensor 5:   D24
+ * Line Sensor 4:   D25
+ * Line Sensor 3:   D26
+ * Line Sensor 2:   D27
+ * Line Sensor 1:   D28
+ * Line Sensor 0:   D29
+ * Line Sensor LED: D30
+ * Limit Stop:      D31
+ * Conveyor Limit:  D32
+ * Start Button:    D37
+ * Radiation Low:   D52
+ * Radiation High:  D53
+ * 
+ * Serial Pins:
+ * Bluetooth TX:    D18
+ * Bluetooth RX:    D19
+ * 
  * @author Arthur Lockman, Tucker Haydon, and Logan Tutt
  * @modified 10/14/2014
  */

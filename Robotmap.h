@@ -81,14 +81,6 @@ enum DigitalInputs
 	kRadiationAlertHigh = 53
 };
 
-///The Analog inputs on the robot.
-enum AnalogInputs
-{
-	kAccX = 0,
-	kAccY = 1,
-	kAccZ = 2
-};
-
 ///The joystick axis on the robot.
 enum JoystickAxis
 {
@@ -98,13 +90,6 @@ enum JoystickAxis
 	kLeftStickX = 4, ///< The left joystick's X axis.
 	kBackLeftButtons = 5, ///< The joystick's back left buttons.
 	kBackRightButtons = 6 ///< The joystick's back right buttons.
-};
-
-///The digital output pins on the robot.
-enum DigitalOutPins
-{
-	kRadiationAlarm = 3, ///< The pin that has the radiation alarm on it.
-	kCompassPower = 52
 };
 
 ///Bluetooth Packet Types
