@@ -61,6 +61,7 @@ NUM_SENSORS, TIMEOUT, kLineSensorLED);
 unsigned int sensorValues[NUM_SENSORS];
 unsigned int sensorAccum = 0;
 
+//Servos
 Servo m_frontRight;
 Servo m_frontLeft;
 Servo m_rearRight;
@@ -68,18 +69,23 @@ Servo m_rearLeft;
 Servo m_claw;
 Servo m_lineup;
 Servo m_conveyor;
+
 LiquidCrystal lcd(40, 41, 39, 38, 37, 36);
 
 bool second_pass = false;
 bool has_new_rod = false, has_old_rod = false; 
 
+//Encoder for conveyor
 Encoder m_trackEncoder(kEncoder1, kEncoder2);
 
+//Bluetooth
 ReactorProtocol m_reactor(kAddressRobot);
 BluetoothMaster m_btMaster;
 
+//Bluetooth packet queue
 QueueList<BTPacket> m_packetQueue;
 
+//Interrupt variables
 volatile unsigned long interruptCount = 0;
 static const unsigned long kTimerPeriod = 100000;
 static const unsigned long kSecond = 1000000;
